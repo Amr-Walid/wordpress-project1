@@ -1,0 +1,6 @@
+server.log
+*.pid
+.DS_Store
+node_modules/
+greenio-preview.html
+preview/

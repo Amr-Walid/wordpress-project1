@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Greenio — The better source of energy for the better tomorrow. Premium renewable energy solutions: solar, wind, hydro and microgrid planning." />
+  <title>Greenio — The better source of energy for the better tomorrow</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="#home" class="logo" aria-label="Greenio home">
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C7 6 5 10 5 14a7 7 0 0 0 14 0c0-1.5-.4-3-1.2-4.4C16.6 12 14 13 12 13c0-3 0-8 0-11Z" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="logo-text">Green<span>io</span></span>
+      </a>
+
+      <nav class="main-nav" id="mainNav" aria-label="Primary">
+        <ul>
+          <li><a href="#home" class="active">Home</a></li>
+          <li><a href="#about">About us</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#projects">Project</a></li>
+          <li><a href="#contact">Contact us</a></li>
+          <li><a href="#pages">Pages</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a href="#contact" class="btn btn-yellow btn-sm">Get Started</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="home">
+    <div class="hero-bg" style="background-image:url('assets/img/hero-windfarm.jpg')"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-container">
+      <div class="hero-card" data-reveal>
+        <span class="eyebrow eyebrow-center">Welcome to Greenio</span>
+        <h1 class="hero-title">
+          The better source of energy<br class="d-desktop"> for the <span class="grad">better tomorrow</span>
+        </h1>
+        <p class="hero-sub">
+          Help protect the environment by powering your home and business with
+          100% clean, renewable energy — engineered for the future.
+        </p>
+        <div class="hero-cta">
+          <a href="#contact" class="btn btn-yellow">Get Started
+            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#services" class="btn btn-ghost">
+            <span class="play-dot" aria-hidden="true"></span> Discover more
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlapping foreground row: stat card + service icon cards -->
+    <div class="container float-row-wrap">
+      <div class="float-row">
+        <!-- STAT CARD -->
+        <article class="stat-card" data-reveal>
+          <div class="stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="currentColor"/></svg>
+          </div>
+          <p class="stat-label">Since 2010, our customers have avoided</p>
+          <p class="stat-number"><span class="counter" data-target="112845311">0</span><span class="plus">+</span></p>
+          <p class="stat-unit">pounds of CO<sub>2</sub></p>
+          <div class="stat-live">
+            <span class="live-dot"></span> Live impact counter
+          </div>
+        </article>
+
+        <!-- SERVICE ICON CARDS -->
+        <article class="svc-card" data-reveal>
+          <div class="svc-ico">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Installation</h3>
+          <p>Turn-key solar &amp; wind installation, engineered and commissioned by certified specialists.</p>
+          <a href="#services" class="learn">Learn more</a>
+        </article>
+
+        <article class="svc-card" data-reveal>
+          <div class="svc-ico">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a3.5 3.5 0 0 0-4.6 4.6L3 18l3 3 7.1-7.1a3.5 3.5 0 0 0 4.6-4.6l-2.2 2.2-2-2 2.2-2.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Maintenance</h3>
+          <p>Predictive monitoring and rapid servicing keep every panel and turbine at peak output.</p>
+          <a href="#services" class="learn">Learn more</a>
+        </article>
+
+        <article class="svc-card" data-reveal>
+          <div class="svc-ico">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v10H8l-4 4V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Consultation</h3>
+          <p>Data-driven energy audits map the fastest, cleanest path to your net-zero goals.</p>
+          <a href="#services" class="learn">Learn more</a>
+        </article>
+
+        <article class="svc-card svc-card--accent" data-reveal>
+          <div class="svc-ico">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l2-5 4 12 2-5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Microgrid Planning</h3>
+          <p>Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.</p>
+          <a href="#services" class="learn">Learn more</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES / ENERGY GRID ============ -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">What we offer</span>
+        <h2 class="section-title">A choice that's good for you<br class="d-desktop"> and the planet.</h2>
+        <p class="section-lead">
+          From flowing rivers to open fields, Greenio harnesses every source of clean power
+          with technology built for a sustainable world.
+        </p>
+      </div>
+
+      <div class="energy-grid">
+        <article class="energy-card energy-card--tall" data-reveal>
+          <div class="energy-img" style="background-image:url('assets/img/turbine-single.jpg')"></div>
+          <div class="energy-body">
+            <span class="tag">Wind</span>
+            <h3>Wind Power</h3>
+            <p>Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.</p>
+            <a href="#contact" class="btn btn-yellow btn-sm">Learn more</a>
+          </div>
+        </article>
+
+        <article class="energy-card" data-reveal>
+          <div class="energy-img" style="background-image:url('assets/img/hydro.jpg')"></div>
+          <div class="energy-body">
+            <span class="tag">Water</span>
+            <h3>Hydroelectric</h3>
+            <p>Fermentum interdum turpis vivamus proin. Modern hydro plants deliver clean baseload power.</p>
+            <a href="#contact" class="btn btn-yellow btn-sm">Learn more</a>
+          </div>
+        </article>
+
+        <article class="energy-card" data-reveal>
+          <div class="energy-img" style="background-image:url('assets/img/solar.jpg')"></div>
+          <div class="energy-body">
+            <span class="tag">Solar</span>
+            <h3>Solar Power</h3>
+            <p>High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.</p>
+            <a href="#contact" class="btn btn-yellow btn-sm">Learn more</a>
+          </div>
+        </article>
+
+        <article class="energy-card energy-card--wide" data-reveal>
+          <div class="energy-img" style="background-image:url('assets/img/windfarm2.jpg')"></div>
+          <div class="energy-body">
+            <span class="tag">Storage</span>
+            <h3>Smart Battery Storage</h3>
+            <p>Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.</p>
+            <a href="#contact" class="btn btn-yellow btn-sm">Learn more</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT / ZIG-ZAG ============ -->
+  <section class="about" id="about">
+    <div class="container about-inner">
+      <div class="about-text" data-reveal>
+        <span class="eyebrow">Who we are</span>
+        <h2 class="section-title">Keep your environment<br class="d-desktop"> clean, make the earth green.</h2>
+        <p>
+          Aliquet sodales litora bibendum quam dui pharetra. For over a decade Greenio has
+          designed, built and maintained renewable systems that pay for themselves — while
+          cutting millions of pounds of carbon from the atmosphere.
+        </p>
+        <ul class="check-list">
+          <li>Certified engineers &amp; 25-year performance warranty</li>
+          <li>Real-time energy dashboards on every install</li>
+          <li>Zero-emission supply from source to socket</li>
+        </ul>
+        <a href="#contact" class="btn btn-yellow">Discover more
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <div class="about-media" data-reveal>
+        <div class="about-img parallax" data-speed="0.12" style="background-image:url('assets/img/turbine-single.jpg')"></div>
+        <!-- Overlay card that breaks the grid -->
+        <div class="overlay-card">
+          <div class="overlay-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="currentColor"/></svg>
+          </div>
+          <span class="overlay-tag">Renewable energy</span>
+          <p class="overlay-title">Energy is the future,<br> make it brilliant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATS BAND ============ -->
+  <section class="band">
+    <div class="container band-grid">
+      <div class="band-item" data-reveal>
+        <span class="band-num"><span class="counter" data-target="1200" data-suffix="+">0</span></span>
+        <span class="band-label">Projects delivered</span>
+      </div>
+      <div class="band-item" data-reveal>
+        <span class="band-num"><span class="counter" data-target="98" data-suffix="%">0</span></span>
+        <span class="band-label">Client satisfaction</span>
+      </div>
+      <div class="band-item" data-reveal>
+        <span class="band-num"><span class="counter" data-target="45" data-suffix="k+">0</span></span>
+        <span class="band-label">Homes powered</span>
+      </div>
+      <div class="band-item" data-reveal>
+        <span class="band-num"><span class="counter" data-target="15" data-suffix="yrs">0</span></span>
+        <span class="band-label">Years of expertise</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="projects" id="projects">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Featured work</span>
+        <h2 class="section-title">Powering communities,<br class="d-desktop"> one project at a time.</h2>
+      </div>
+      <div class="project-grid">
+        <article class="project-card" data-reveal>
+          <div class="project-img" style="background-image:url('assets/img/solar.jpg')"></div>
+          <div class="project-meta"><span class="tag">Solar Farm</span><h3>Sunfield Array — 42 MW</h3></div>
+        </article>
+        <article class="project-card" data-reveal>
+          <div class="project-img" style="background-image:url('assets/img/windfarm2.jpg')"></div>
+          <div class="project-meta"><span class="tag">Wind</span><h3>Coastal Breeze Park</h3></div>
+        </article>
+        <article class="project-card" data-reveal>
+          <div class="project-img" style="background-image:url('assets/img/hydro.jpg')"></div>
+          <div class="project-meta"><span class="tag">Hydro</span><h3>Riverstone Plant</h3></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta" id="contact">
+    <div class="container cta-inner" data-reveal>
+      <div class="cta-copy">
+        <span class="eyebrow eyebrow-light">Ready to switch?</span>
+        <h2>Start powering your world with clean energy today.</h2>
+      </div>
+      <form class="cta-form" onsubmit="return false;">
+        <input type="email" placeholder="Enter your email address" aria-label="Email" required />
+        <button type="submit" class="btn btn-yellow">Get Started</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="pages">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="logo logo--light">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 5 10 5 14a7 7 0 0 0 14 0c0-1.5-.4-3-1.2-4.4C16.6 12 14 13 12 13c0-3 0-8 0-11Z" fill="currentColor"/></svg>
+          </span>
+          <span class="logo-text">Green<span>io</span></span>
+        </a>
+        <p>The better source of energy for the better tomorrow. 100% clean. 100% future-ready.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#about">About us</a><a href="#services">Services</a><a href="#projects">Projects</a><a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="#services">Solar Power</a><a href="#services">Wind Power</a><a href="#services">Hydroelectric</a><a href="#services">Microgrid Planning</a>
+      </div>
+      <div class="footer-col">
+        <h4>Get in touch</h4>
+        <a href="#">hello@greenio.energy</a><a href="#">+1 (800) 555-0199</a><a href="#">123 Clean Energy Blvd</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© 2026 Greenio. All rights reserved.</p>
+      <p>Crafted for a sustainable world.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
