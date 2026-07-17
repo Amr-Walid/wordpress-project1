@@ -1,6 +1,6 @@
 <?php
 /**
- * The main template file — Greenio one-page landing (ACF-powered).
+ * Front Page template — Greenio one-page landing (ACF-powered).
  *
  * All content is editable from the WordPress dashboard when Advanced Custom
  * Fields is active (see the field groups registered in functions.php). Every

@@ -156,3 +156,515 @@ function greenio_body_classes( $classes ) {
 	return $classes;
 }
 add_filter( 'body_class', 'greenio_body_classes' );
+
+/* =========================================================================
+ * ADVANCED CUSTOM FIELDS (ACF) INTEGRATION
+ *
+ * The theme works with OR without ACF installed:
+ *  - If ACF is active, all content is editable from the WordPress backend.
+ *  - If ACF is NOT active, the template helpers below fall back to sensible
+ *    defaults so the site never breaks (see greenio_field() / greenio_image()).
+ *
+ * Install "Advanced Custom Fields" (free) or ACF PRO to unlock editing.
+ * The Repeater field used for the services grid requires ACF PRO — a graceful
+ * fallback is provided for the free version.
+ * ========================================================================= */
+
+/**
+ * Is ACF available?
+ *
+ * @return bool
+ */
+function greenio_acf() {
+	return function_exists( 'get_field' );
+}
+
+/**
+ * Safe field getter with a fallback value.
+ *
+ * Returns the ACF field when available & non-empty, otherwise $default.
+ *
+ * @param string $selector Field name.
+ * @param mixed  $default  Fallback value.
+ * @param mixed  $post_id  Post ID or 'option'. Default current post.
+ * @return mixed
+ */
+function greenio_field( $selector, $default = '', $post_id = false ) {
+	if ( greenio_acf() ) {
+		$value = get_field( $selector, $post_id );
+		if ( ! empty( $value ) || '0' === $value || 0 === $value ) {
+			return $value;
+		}
+	}
+	return $default;
+}
+
+/**
+ * Safe image getter.
+ *
+ * ACF image fields may return an ID, URL string, or array (depending on the
+ * "Return Format"). This normalises any of those to a usable URL and falls
+ * back to a bundled theme asset if empty.
+ *
+ * @param string $selector      Field name.
+ * @param string $fallback_asset Relative theme asset path used when empty.
+ * @param string $size          Image size for array/ID formats.
+ * @param mixed  $post_id       Post ID or 'option'.
+ * @return string URL.
+ */
+function greenio_image( $selector, $fallback_asset, $size = 'large', $post_id = false ) {
+	$img = greenio_acf() ? get_field( $selector, $post_id ) : '';
+
+	if ( is_array( $img ) ) {
+		// Array return format.
+		if ( ! empty( $img['sizes'][ $size ] ) ) {
+			return $img['sizes'][ $size ];
+		}
+		if ( ! empty( $img['url'] ) ) {
+			return $img['url'];
+		}
+	} elseif ( is_numeric( $img ) ) {
+		// ID return format.
+		$src = wp_get_attachment_image_url( (int) $img, $size );
+		if ( $src ) {
+			return $src;
+		}
+	} elseif ( is_string( $img ) && '' !== $img ) {
+		// URL return format.
+		return $img;
+	}
+
+	// An empty fallback means "no image" (e.g. optional logo) — return ''.
+	if ( '' === $fallback_asset || null === $fallback_asset ) {
+		return '';
+	}
+
+	return greenio_asset( $fallback_asset );
+}
+
+/**
+ * Register an ACF Options page for global (header/footer) settings.
+ */
+function greenio_acf_options_page() {
+	if ( function_exists( 'acf_add_options_page' ) ) {
+		acf_add_options_page(
+			array(
+				'page_title' => __( 'Greenio Theme Settings', 'greenio' ),
+				'menu_title' => __( 'Theme Settings', 'greenio' ),
+				'menu_slug'  => 'greenio-settings',
+				'capability' => 'edit_theme_options',
+				'icon_url'   => 'dashicons-superhero',
+				'position'   => 59,
+				'redirect'   => false,
+			)
+		);
+	}
+}
+add_action( 'acf/init', 'greenio_acf_options_page' );
+
+/**
+ * Register all ACF field groups programmatically.
+ */
+function greenio_register_acf_fields() {
+	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	/* --------------------------------------------------------------------
+	 * GROUP 1 — Front Page Content
+	 * Shows on the page set as the static front page (Settings → Reading).
+	 * ------------------------------------------------------------------ */
+	acf_add_local_field_group(
+		array(
+			'key'      => 'group_greenio_front',
+			'title'    => __( 'Greenio — Front Page Content', 'greenio' ),
+			'fields'   => array(
+
+				/* ---- HERO SECTION ---- */
+				array(
+					'key'     => 'field_hero_tab',
+					'label'   => __( 'Hero Section', 'greenio' ),
+					'type'    => 'tab',
+					'placement' => 'top',
+				),
+				array(
+					'key'          => 'field_hero_eyebrow',
+					'label'        => __( 'Hero Eyebrow', 'greenio' ),
+					'name'         => 'hero_eyebrow',
+					'type'         => 'text',
+					'default_value'=> 'Welcome to Greenio',
+				),
+				array(
+					'key'          => 'field_hero_title',
+					'label'        => __( 'Hero Title', 'greenio' ),
+					'name'         => 'hero_title',
+					'type'         => 'text',
+					'instructions' => __( 'Wrap the highlighted words in [g]...[/g] to apply the green→yellow gradient.', 'greenio' ),
+					'default_value'=> 'The better source of energy for the [g]better tomorrow[/g]',
+				),
+				array(
+					'key'          => 'field_hero_subtitle',
+					'label'        => __( 'Hero Subtitle', 'greenio' ),
+					'name'         => 'hero_subtitle',
+					'type'         => 'textarea',
+					'rows'         => 3,
+					'default_value'=> 'Help protect the environment by powering your home and business with 100% clean, renewable energy — engineered for the future.',
+				),
+				array(
+					'key'          => 'field_hero_cta_text',
+					'label'        => __( 'Primary CTA Text', 'greenio' ),
+					'name'         => 'hero_cta_text',
+					'type'         => 'text',
+					'default_value'=> 'Get Started',
+				),
+				array(
+					'key'          => 'field_hero_cta_link',
+					'label'        => __( 'Primary CTA Link', 'greenio' ),
+					'name'         => 'hero_cta_link',
+					'type'         => 'text',
+					'default_value'=> '#contact',
+				),
+				array(
+					'key'          => 'field_hero_cta2_text',
+					'label'        => __( 'Secondary CTA Text', 'greenio' ),
+					'name'         => 'hero_cta2_text',
+					'type'         => 'text',
+					'default_value'=> 'Discover more',
+				),
+				array(
+					'key'          => 'field_hero_cta2_link',
+					'label'        => __( 'Secondary CTA Link', 'greenio' ),
+					'name'         => 'hero_cta2_link',
+					'type'         => 'text',
+					'default_value'=> '#services',
+				),
+				array(
+					'key'           => 'field_hero_bg',
+					'label'         => __( 'Hero Background Image', 'greenio' ),
+					'name'          => 'hero_bg',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				/* ---- STATS CARD ---- */
+				array(
+					'key'   => 'field_stats_tab',
+					'label' => __( 'Stats Card', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_stat_label',
+					'label'        => __( 'Stat Subtext (top)', 'greenio' ),
+					'name'         => 'stat_label',
+					'type'         => 'text',
+					'default_value'=> 'Since 2010, our customers have avoided',
+				),
+				array(
+					'key'          => 'field_stat_number',
+					'label'        => __( 'Big Number', 'greenio' ),
+					'name'         => 'stat_number',
+					'type'         => 'number',
+					'instructions' => __( 'Digits only — the front-end animates a live count-up to this value.', 'greenio' ),
+					'default_value'=> 112845311,
+				),
+				array(
+					'key'          => 'field_stat_unit',
+					'label'        => __( 'Unit / Subtext (bottom)', 'greenio' ),
+					'name'         => 'stat_unit',
+					'type'         => 'text',
+					'default_value'=> 'pounds of CO₂',
+				),
+
+				/* ---- SERVICES GRID (REPEATER) ---- */
+				array(
+					'key'   => 'field_services_tab',
+					'label' => __( 'Services Grid', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_services_repeater',
+					'label'        => __( 'Service Cards', 'greenio' ),
+					'name'         => 'services',
+					'type'         => 'repeater',
+					'instructions' => __( 'Add the service cards shown under the hero (recommended: 4). Requires ACF PRO.', 'greenio' ),
+					'min'          => 0,
+					'max'          => 6,
+					'layout'       => 'block',
+					'button_label' => __( 'Add Service', 'greenio' ),
+					'sub_fields'   => array(
+						array(
+							'key'           => 'field_service_icon',
+							'label'         => __( 'Icon / Image', 'greenio' ),
+							'name'          => 'icon',
+							'type'          => 'image',
+							'return_format' => 'url',
+							'preview_size'  => 'thumbnail',
+							'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
+						),
+						array(
+							'key'   => 'field_service_title',
+							'label' => __( 'Title', 'greenio' ),
+							'name'  => 'title',
+							'type'  => 'text',
+						),
+						array(
+							'key'   => 'field_service_desc',
+							'label' => __( 'Description', 'greenio' ),
+							'name'  => 'description',
+							'type'  => 'textarea',
+							'rows'  => 3,
+						),
+						array(
+							'key'          => 'field_service_link',
+							'label'        => __( 'Link', 'greenio' ),
+							'name'         => 'link',
+							'type'         => 'text',
+							'default_value'=> '#services',
+						),
+						array(
+							'key'          => 'field_service_featured',
+							'label'        => __( 'Highlight (blue) card?', 'greenio' ),
+							'name'         => 'featured',
+							'type'         => 'true_false',
+							'ui'           => 1,
+						),
+					),
+				),
+
+				/* ---- ABOUT / ZIG-ZAG ---- */
+				array(
+					'key'   => 'field_about_tab',
+					'label' => __( 'About / Zig-Zag', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_about_eyebrow',
+					'label'        => __( 'About Eyebrow', 'greenio' ),
+					'name'         => 'about_eyebrow',
+					'type'         => 'text',
+					'default_value'=> 'Who we are',
+				),
+				array(
+					'key'          => 'field_about_title',
+					'label'        => __( 'About Title', 'greenio' ),
+					'name'         => 'about_title',
+					'type'         => 'text',
+					'default_value'=> 'Keep your environment clean, make the earth green.',
+				),
+				array(
+					'key'          => 'field_about_desc',
+					'label'        => __( 'About Description', 'greenio' ),
+					'name'         => 'about_desc',
+					'type'         => 'textarea',
+					'rows'         => 4,
+					'default_value'=> 'For over a decade Greenio has designed, built and maintained renewable systems that pay for themselves — while cutting millions of pounds of carbon from the atmosphere.',
+				),
+				array(
+					'key'          => 'field_about_bullets',
+					'label'        => __( 'Checklist Items', 'greenio' ),
+					'name'         => 'about_bullets',
+					'type'         => 'textarea',
+					'instructions' => __( 'One item per line.', 'greenio' ),
+					'rows'         => 4,
+					'default_value'=> "Certified engineers & 25-year performance warranty\nReal-time energy dashboards on every install\nZero-emission supply from source to socket",
+				),
+				array(
+					'key'           => 'field_about_image',
+					'label'         => __( 'About Image', 'greenio' ),
+					'name'          => 'about_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+				array(
+					'key'          => 'field_about_overlay_tag',
+					'label'        => __( 'Overlay Card Tag', 'greenio' ),
+					'name'         => 'about_overlay_tag',
+					'type'         => 'text',
+					'default_value'=> 'Renewable energy',
+				),
+				array(
+					'key'          => 'field_about_overlay_title',
+					'label'        => __( 'Overlay Card Title', 'greenio' ),
+					'name'         => 'about_overlay_title',
+					'type'         => 'text',
+					'default_value'=> 'Energy is the future, make it brilliant.',
+				),
+			),
+			'location' => array(
+				array(
+					array(
+						'param'    => 'page_type',
+						'operator' => '==',
+						'value'    => 'front_page',
+					),
+				),
+			),
+			'menu_order'            => 0,
+			'position'              => 'normal',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'hide_on_screen'        => array( 'the_content' ),
+			'active'                => true,
+			'description'           => __( 'Editable content for the Greenio front page.', 'greenio' ),
+		)
+	);
+
+	/* --------------------------------------------------------------------
+	 * GROUP 2 — Global Settings (Options page): logo + header CTA + footer
+	 * ------------------------------------------------------------------ */
+	acf_add_local_field_group(
+		array(
+			'key'    => 'group_greenio_options',
+			'title'  => __( 'Greenio — Global Settings', 'greenio' ),
+			'fields' => array(
+				array(
+					'key'   => 'field_opt_header_tab',
+					'label' => __( 'Logo & Header', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_opt_logo_text',
+					'label'        => __( 'Logo Text', 'greenio' ),
+					'name'         => 'logo_text',
+					'type'         => 'text',
+					'instructions' => __( 'Used when no logo image is set. Wrap the accent part in [g]...[/g] (e.g. Green[g]io[/g]).', 'greenio' ),
+					'default_value'=> 'Green[g]io[/g]',
+				),
+				array(
+					'key'           => 'field_opt_logo_image',
+					'label'         => __( 'Logo Image', 'greenio' ),
+					'name'          => 'logo_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'thumbnail',
+					'instructions'  => __( 'Optional. Overrides the text logo when set.', 'greenio' ),
+				),
+				array(
+					'key'          => 'field_opt_header_cta_text',
+					'label'        => __( 'Header CTA Text', 'greenio' ),
+					'name'         => 'header_cta_text',
+					'type'         => 'text',
+					'default_value'=> 'Get Started',
+				),
+				array(
+					'key'          => 'field_opt_header_cta_link',
+					'label'        => __( 'Header CTA Link', 'greenio' ),
+					'name'         => 'header_cta_link',
+					'type'         => 'text',
+					'default_value'=> '#contact',
+				),
+				array(
+					'key'   => 'field_opt_footer_tab',
+					'label' => __( 'Footer', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_opt_footer_about',
+					'label'        => __( 'Footer About Text', 'greenio' ),
+					'name'         => 'footer_about',
+					'type'         => 'textarea',
+					'rows'         => 3,
+					'default_value'=> 'The better source of energy for the better tomorrow. 100% clean. 100% future-ready.',
+				),
+				array(
+					'key'          => 'field_opt_footer_email',
+					'label'        => __( 'Contact Email', 'greenio' ),
+					'name'         => 'footer_email',
+					'type'         => 'text',
+					'default_value'=> 'hello@greenio.energy',
+				),
+				array(
+					'key'          => 'field_opt_footer_phone',
+					'label'        => __( 'Contact Phone', 'greenio' ),
+					'name'         => 'footer_phone',
+					'type'         => 'text',
+					'default_value'=> '+1 (800) 555-0199',
+				),
+				array(
+					'key'          => 'field_opt_footer_address',
+					'label'        => __( 'Address', 'greenio' ),
+					'name'         => 'footer_address',
+					'type'         => 'text',
+					'default_value'=> '123 Clean Energy Blvd',
+				),
+				array(
+					'key'          => 'field_opt_footer_copyright',
+					'label'        => __( 'Copyright Note', 'greenio' ),
+					'name'         => 'footer_copyright',
+					'type'         => 'text',
+					'default_value'=> 'Crafted for a sustainable world.',
+				),
+			),
+			'location' => array(
+				array(
+					array(
+						'param'    => 'options_page',
+						'operator' => '==',
+						'value'    => 'greenio-settings',
+					),
+				),
+			),
+			'active'      => true,
+			'description' => __( 'Global header & footer settings for the Greenio theme.', 'greenio' ),
+		)
+	);
+}
+add_action( 'acf/init', 'greenio_register_acf_fields' );
+
+/**
+ * Helper: apply the [g]...[/g] gradient shortcode to a string and escape it.
+ *
+ * @param string $text Raw text possibly containing [g]...[/g].
+ * @return string Safe HTML with <span class="grad"> wrapping.
+ */
+function greenio_gradient_text( $text ) {
+	$text = esc_html( $text );
+	$text = str_replace(
+		array( '[g]', '[/g]' ),
+		array( '<span class="grad">', '</span>' ),
+		$text
+	);
+	return $text;
+}
+
+/**
+ * Helper: render the text logo markup.
+ *
+ * Preserves the original two-tone "Green<span>io</span>" styling for the
+ * default value, honours the [g]...[/g] gradient shortcode, and safely
+ * escapes any custom logo text set from the ACF Options page.
+ *
+ * @param string $text Logo text (from ACF option, with fallback).
+ * @return string Safe HTML wrapped in <span class="logo-text">.
+ */
+function greenio_logo_text_markup( $text ) {
+	$text = (string) $text;
+
+	// Honour the gradient shortcode if the client uses it.
+	if ( false !== strpos( $text, '[g]' ) ) {
+		return '<span class="logo-text">' . greenio_gradient_text( $text ) . '</span>';
+	}
+
+	// Recreate the signature two-tone look for the default "Greenio".
+	if ( 'Greenio' === $text ) {
+		return '<span class="logo-text">Green<span>io</span></span>';
+	}
+
+	// Any other custom text: escape and render plainly.
+	return '<span class="logo-text">' . esc_html( $text ) . '</span>';
+}
+
+/**
+ * Admin notice nudging the user to install ACF (dismissible, non-fatal).
+ */
+function greenio_acf_admin_notice() {
+	if ( greenio_acf() || ! current_user_can( 'install_plugins' ) ) {
+		return;
+	}
+	echo '<div class="notice notice-info is-dismissible"><p><strong>Greenio:</strong> ';
+	echo esc_html__( 'Install & activate the free "Advanced Custom Fields" plugin to edit all front-page content from the dashboard. The theme works fine without it using default content.', 'greenio' );
+	echo '</p></div>';
+}
+add_action( 'admin_notices', 'greenio_acf_admin_notice' );

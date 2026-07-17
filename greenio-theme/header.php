@@ -23,20 +23,31 @@
 
 <a class="screen-reader-text" href="#content"><?php esc_html_e( 'Skip to content', 'greenio' ); ?></a>
 
+<?php
+// ---- Global header settings from ACF Options page (with fallbacks) ----
+$logo_text       = greenio_field( 'logo_text', 'Greenio', 'option' );
+$logo_image      = greenio_image( 'logo_image', '', 'medium', 'option' );
+$header_cta_text = greenio_field( 'header_cta_text', __( 'Get Started', 'greenio' ), 'option' );
+$header_cta_link = greenio_field( 'header_cta_link', '#contact', 'option' );
+?>
 <header class="site-header" id="siteHeader">
 	<div class="container header-inner">
 
-		<?php // ---- Logo (custom logo if set, else text logo) ---- ?>
+		<?php // ---- Logo: WP custom logo > ACF logo image > ACF/text logo ---- ?>
 		<?php if ( has_custom_logo() ) : ?>
 			<div class="logo"><?php the_custom_logo(); ?></div>
+		<?php elseif ( $logo_image ) : ?>
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo" aria-label="<?php echo esc_attr( $logo_text ? $logo_text : get_bloginfo( 'name' ) ); ?>">
+				<img src="<?php echo esc_url( $logo_image ); ?>" alt="<?php echo esc_attr( $logo_text ? $logo_text : get_bloginfo( 'name' ) ); ?>" class="logo-img" />
+			</a>
 		<?php else : ?>
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo" aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo" aria-label="<?php echo esc_attr( $logo_text ? $logo_text : get_bloginfo( 'name' ) ); ?>">
 				<span class="logo-mark" aria-hidden="true">
 					<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<path d="M12 2C7 6 5 10 5 14a7 7 0 0 0 14 0c0-1.5-.4-3-1.2-4.4C16.6 12 14 13 12 13c0-3 0-8 0-11Z" fill="currentColor"/>
 					</svg>
 				</span>
-				<span class="logo-text">Green<span>io</span></span>
+				<?php echo greenio_logo_text_markup( $logo_text ); ?>
 			</a>
 		<?php endif; ?>
 
@@ -57,7 +68,9 @@
 
 		<?php // ---- CTA + mobile toggle ---- ?>
 		<div class="header-actions">
-			<a href="#contact" class="btn btn-yellow btn-sm"><?php esc_html_e( 'Get Started', 'greenio' ); ?></a>
+			<?php if ( $header_cta_text ) : ?>
+				<a href="<?php echo esc_url( $header_cta_link ); ?>" class="btn btn-yellow btn-sm"><?php echo esc_html( $header_cta_text ); ?></a>
+			<?php endif; ?>
 			<button class="nav-toggle" id="navToggle" aria-label="<?php esc_attr_e( 'Toggle menu', 'greenio' ); ?>" aria-expanded="false">
 				<span></span><span></span><span></span>
 			</button>

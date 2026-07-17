@@ -151,14 +151,16 @@ sub{font-size:.6em}
 /* =========================================================
    5. HERO
    ========================================================= */
-.hero{position:relative;padding-top:150px;overflow:hidden;background:var(--bg-soft)}
+/* NOTE: no overflow:hidden here — it would clip the overlapping float-row
+   cards that extend below the hero via negative margin. */
+.hero{position:relative;padding-top:190px;background:var(--bg-soft)}
 .hero-bg{
-  position:absolute;inset:0;bottom:38%;background-size:cover;background-position:center 35%;
+  position:absolute;top:0;left:0;right:0;height:68%;background-size:cover;background-position:center 35%;
   z-index:0;transform:scale(1.05);animation:zoomIn 12s ease forwards;
-  border-bottom-left-radius:40px;border-bottom-right-radius:40px;
+  border-bottom-left-radius:40px;border-bottom-right-radius:40px;overflow:hidden;
 }
 @keyframes zoomIn{to{transform:scale(1)}}
-.hero-overlay{position:absolute;inset:0;bottom:38%;z-index:1;
+.hero-overlay{position:absolute;top:0;left:0;right:0;height:68%;z-index:1;
   background:linear-gradient(180deg,rgba(10,36,84,.55) 0%,rgba(10,36,84,.25) 45%,rgba(10,36,84,.55) 100%);
   border-bottom-left-radius:40px;border-bottom-right-radius:40px;}
 .hero-container{position:relative;z-index:3}
@@ -168,7 +170,7 @@ sub{font-size:.6em}
   max-width:760px;margin:0 auto;text-align:center;
   background:rgba(255,255,255,.10);backdrop-filter:blur(6px);
   border:1px solid rgba(255,255,255,.18);
-  padding:14px 30px 40px;border-radius:var(--radius);
+  padding:44px 30px 48px;border-radius:var(--radius);
 }
 .hero-title{font-size:clamp(2.1rem,5.2vw,3.7rem);color:#fff;margin-bottom:18px;text-shadow:0 4px 30px rgba(0,0,0,.25)}
 .grad{background:linear-gradient(90deg,var(--green-light),var(--yellow));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -179,8 +181,9 @@ sub{font-size:.6em}
 .float-row-wrap{position:relative;z-index:5}
 .float-row{
   display:grid;grid-template-columns:1.15fr repeat(4,1fr);gap:22px;
+  align-items:stretch;      /* equal-height cards */
   margin-top:52px;
-  margin-bottom:-90px;   /* <-- NEGATIVE MARGIN: pulls the cards down to overlap the section below */
+  margin-bottom:-80px;      /* <-- NEGATIVE MARGIN: pulls the cards down to overlap the section below */
 }
 
 /* THE DEEP BLUE STAT CARD */
@@ -230,10 +233,27 @@ sub{font-size:.6em}
    6. SERVICES / ENERGY GRID
    ========================================================= */
 .services{padding:170px 0 100px;background:var(--bg-soft)} /* top padding leaves room for overlap */
-.energy-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:230px;gap:24px}
+/* Explicit 2x2 layout via grid-areas so cards fill the FULL width with no gaps:
+   ┌──────┬──────────────┐
+   │ wind │  hydro │ solar
+   │ (tall)├──────────────┤
+   │      │   storage (wide)
+   └──────┴──────────────┘ */
+.energy-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:230px 230px;
+  grid-template-areas:
+    "wind hydro solar"
+    "wind storage storage";
+  gap:24px;
+}
 .energy-card{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md);cursor:pointer}
-.energy-card--tall{grid-row:span 2}
-.energy-card--wide{grid-column:span 2}
+.energy-card--tall{grid-area:wind}
+.energy-card--wide{grid-area:storage}
+/* Hydro + Solar auto-fill the remaining named-adjacent cells */
+.energy-grid > .energy-card:nth-child(2){grid-area:hydro}
+.energy-grid > .energy-card:nth-child(3){grid-area:solar}
 .energy-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .8s var(--ease)}
 .energy-card:hover .energy-img{transform:scale(1.08)}
 .energy-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(10,36,84,.9) 100%)}
@@ -329,9 +349,17 @@ sub{font-size:.6em}
 @media (max-width:1080px){
   .float-row{grid-template-columns:repeat(2,1fr);margin-bottom:-60px}
   .stat-card{grid-column:span 2}
-  .energy-grid{grid-template-columns:repeat(2,1fr)}
+  /* Reset the desktop grid-areas: 2-column even layout on tablets */
+  .energy-grid{
+    grid-template-columns:repeat(2,1fr);
+    grid-template-rows:auto;
+    grid-template-areas:none;
+    grid-auto-rows:230px;
+  }
+  .energy-card--tall,.energy-card--wide,
+  .energy-grid > .energy-card:nth-child(2),
+  .energy-grid > .energy-card:nth-child(3){grid-area:auto}
   .energy-card--wide{grid-column:span 2}
-  .energy-card--tall{grid-row:span 1}
   .energy-body p{max-height:120px;opacity:1}
 }
 @media (max-width:900px){
@@ -351,8 +379,8 @@ sub{font-size:.6em}
 @media (max-width:640px){
   .container{padding:0 18px}
   .d-desktop{display:none}
-  .hero{padding-top:120px}
-  .hero-bg,.hero-overlay{bottom:0}
+  .hero{padding-top:150px}
+  .hero-bg,.hero-overlay{height:100%;border-radius:0}
   .hero-card{background:transparent;border:0;backdrop-filter:none;padding:0 6px 30px}
   .float-row{grid-template-columns:1fr;margin-top:36px;margin-bottom:-40px}
   .stat-card{grid-column:span 1}
