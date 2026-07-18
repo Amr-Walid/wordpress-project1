@@ -214,7 +214,23 @@ function greenio_field( $selector, $default = '', $post_id = false ) {
  */
 function greenio_image( $selector, $fallback_asset, $size = 'large', $post_id = false ) {
 	$img = greenio_acf() ? get_field( $selector, $post_id ) : '';
+	return greenio_image_value( $img, $fallback_asset, $size );
+}
 
+/**
+ * Normalise an already-fetched ACF image value to a usable URL.
+ *
+ * Handy for repeater / sub-field image values (which come back as raw
+ * ID / URL / array data, so greenio_image() — which calls get_field() —
+ * cannot be used). Falls back to a bundled theme asset if empty; an empty
+ * fallback returns '' (meaning "no image").
+ *
+ * @param mixed  $img            Raw image value (array | ID | URL | '').
+ * @param string $fallback_asset Relative theme asset path used when empty.
+ * @param string $size           Image size for array/ID formats.
+ * @return string URL.
+ */
+function greenio_image_value( $img, $fallback_asset, $size = 'large' ) {
 	if ( is_array( $img ) ) {
 		// Array return format.
 		if ( ! empty( $img['sizes'][ $size ] ) ) {
@@ -376,171 +392,64 @@ function greenio_register_acf_fields() {
 					'default_value'=> 'pounds of CO₂',
 				),
 
-				/* ---- SERVICES GRID (4 individual flat cards — FREE ACF, no repeater) ---- */
+				/* ---- SERVICES GRID (ACF PRO Repeater) ---- */
 				array(
 					'key'   => 'field_services_tab',
 					'label' => __( 'Services Grid', 'greenio' ),
 					'type'  => 'tab',
 				),
-				// -- Service 1 --
 				array(
-					'key'          => 'field_service_1_title',
-					'label'        => __( 'Service 1 — Title', 'greenio' ),
-					'name'         => 'service_1_title',
-					'type'         => 'text',
-					'default_value'=> 'Installation',
-				),
-				array(
-					'key'          => 'field_service_1_desc',
-					'label'        => __( 'Service 1 — Description', 'greenio' ),
-					'name'         => 'service_1_desc',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'Turn-key solar & wind installation, engineered and commissioned by certified specialists.',
-				),
-				array(
-					'key'          => 'field_service_1_link',
-					'label'        => __( 'Service 1 — Link', 'greenio' ),
-					'name'         => 'service_1_link',
-					'type'         => 'text',
-					'default_value'=> '#services',
-				),
-				array(
-					'key'           => 'field_service_1_icon',
-					'label'         => __( 'Service 1 — Icon', 'greenio' ),
-					'name'          => 'service_1_icon',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'thumbnail',
-					'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
-				),
-				array(
-					'key'          => 'field_service_1_featured',
-					'label'        => __( 'Service 1 — Highlight (blue) card?', 'greenio' ),
-					'name'         => 'service_1_featured',
-					'type'         => 'true_false',
-					'ui'           => 1,
-					'default_value'=> 0,
-				),
-				// -- Service 2 --
-				array(
-					'key'          => 'field_service_2_title',
-					'label'        => __( 'Service 2 — Title', 'greenio' ),
-					'name'         => 'service_2_title',
-					'type'         => 'text',
-					'default_value'=> 'Maintenance',
-				),
-				array(
-					'key'          => 'field_service_2_desc',
-					'label'        => __( 'Service 2 — Description', 'greenio' ),
-					'name'         => 'service_2_desc',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'Predictive monitoring and rapid servicing keep every panel and turbine at peak output.',
-				),
-				array(
-					'key'          => 'field_service_2_link',
-					'label'        => __( 'Service 2 — Link', 'greenio' ),
-					'name'         => 'service_2_link',
-					'type'         => 'text',
-					'default_value'=> '#services',
-				),
-				array(
-					'key'           => 'field_service_2_icon',
-					'label'         => __( 'Service 2 — Icon', 'greenio' ),
-					'name'          => 'service_2_icon',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'thumbnail',
-					'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
-				),
-				array(
-					'key'          => 'field_service_2_featured',
-					'label'        => __( 'Service 2 — Highlight (blue) card?', 'greenio' ),
-					'name'         => 'service_2_featured',
-					'type'         => 'true_false',
-					'ui'           => 1,
-					'default_value'=> 0,
-				),
-				// -- Service 3 --
-				array(
-					'key'          => 'field_service_3_title',
-					'label'        => __( 'Service 3 — Title', 'greenio' ),
-					'name'         => 'service_3_title',
-					'type'         => 'text',
-					'default_value'=> 'Consultation',
-				),
-				array(
-					'key'          => 'field_service_3_desc',
-					'label'        => __( 'Service 3 — Description', 'greenio' ),
-					'name'         => 'service_3_desc',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'Data-driven energy audits map the fastest, cleanest path to your net-zero goals.',
-				),
-				array(
-					'key'          => 'field_service_3_link',
-					'label'        => __( 'Service 3 — Link', 'greenio' ),
-					'name'         => 'service_3_link',
-					'type'         => 'text',
-					'default_value'=> '#services',
-				),
-				array(
-					'key'           => 'field_service_3_icon',
-					'label'         => __( 'Service 3 — Icon', 'greenio' ),
-					'name'          => 'service_3_icon',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'thumbnail',
-					'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
-				),
-				array(
-					'key'          => 'field_service_3_featured',
-					'label'        => __( 'Service 3 — Highlight (blue) card?', 'greenio' ),
-					'name'         => 'service_3_featured',
-					'type'         => 'true_false',
-					'ui'           => 1,
-					'default_value'=> 0,
-				),
-				// -- Service 4 (highlighted by default) --
-				array(
-					'key'          => 'field_service_4_title',
-					'label'        => __( 'Service 4 — Title', 'greenio' ),
-					'name'         => 'service_4_title',
-					'type'         => 'text',
-					'default_value'=> 'Microgrid Planning',
-				),
-				array(
-					'key'          => 'field_service_4_desc',
-					'label'        => __( 'Service 4 — Description', 'greenio' ),
-					'name'         => 'service_4_desc',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.',
-				),
-				array(
-					'key'          => 'field_service_4_link',
-					'label'        => __( 'Service 4 — Link', 'greenio' ),
-					'name'         => 'service_4_link',
-					'type'         => 'text',
-					'default_value'=> '#services',
-				),
-				array(
-					'key'           => 'field_service_4_icon',
-					'label'         => __( 'Service 4 — Icon', 'greenio' ),
-					'name'          => 'service_4_icon',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'thumbnail',
-					'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
-				),
-				array(
-					'key'          => 'field_service_4_featured',
-					'label'        => __( 'Service 4 — Highlight (blue) card?', 'greenio' ),
-					'name'         => 'service_4_featured',
-					'type'         => 'true_false',
-					'ui'           => 1,
-					'default_value'=> 1,
+					'key'          => 'field_services_repeater',
+					'label'        => __( 'Service Cards', 'greenio' ),
+					'name'         => 'services',
+					'type'         => 'repeater',
+					'instructions' => __( 'The icon cards shown under the hero. Leave empty to fall back to the built-in defaults.', 'greenio' ),
+					'min'          => 0,
+					'max'          => 8,
+					'layout'       => 'block',
+					'button_label' => __( 'Add Service', 'greenio' ),
+					'sub_fields'   => array(
+						array(
+							'key'           => 'field_service_icon',
+							'label'         => __( 'Icon', 'greenio' ),
+							'name'          => 'icon',
+							'type'          => 'image',
+							'return_format' => 'url',
+							'preview_size'  => 'thumbnail',
+							'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
+							'wrapper'       => array( 'width' => '25' ),
+						),
+						array(
+							'key'     => 'field_service_title',
+							'label'   => __( 'Title', 'greenio' ),
+							'name'    => 'title',
+							'type'    => 'text',
+							'wrapper' => array( 'width' => '45' ),
+						),
+						array(
+							'key'     => 'field_service_link',
+							'label'   => __( 'Link', 'greenio' ),
+							'name'    => 'link',
+							'type'    => 'text',
+							'default_value' => '#services',
+							'wrapper' => array( 'width' => '30' ),
+						),
+						array(
+							'key'   => 'field_service_desc',
+							'label' => __( 'Description', 'greenio' ),
+							'name'  => 'description',
+							'type'  => 'textarea',
+							'rows'  => 3,
+						),
+						array(
+							'key'           => 'field_service_featured',
+							'label'         => __( 'Highlight (blue) card?', 'greenio' ),
+							'name'          => 'featured',
+							'type'          => 'true_false',
+							'ui'            => 1,
+							'default_value' => 0,
+						),
+					),
 				),
 
 				/* ---- ABOUT / ZIG-ZAG ---- */
@@ -760,99 +669,47 @@ function greenio_register_acf_fields() {
 					'preview_size'  => 'medium',
 				),
 
-				/* ---- STATS BAND ---- */
+				/* ---- STATS BAND (ACF PRO Repeater) ---- */
 				array(
 					'key'   => 'field_band_tab',
 					'label' => __( 'Stats Band', 'greenio' ),
 					'type'  => 'tab',
 				),
-				// -- Stat 1 --
 				array(
-					'key'          => 'field_band_1_number',
-					'label'        => __( 'Stat 1 — Counter Target', 'greenio' ),
-					'name'         => 'band_1_number',
-					'type'         => 'number',
-					'default_value'=> 1200,
-				),
-				array(
-					'key'          => 'field_band_1_suffix',
-					'label'        => __( 'Stat 1 — Suffix', 'greenio' ),
-					'name'         => 'band_1_suffix',
-					'type'         => 'text',
-					'default_value'=> '+',
-				),
-				array(
-					'key'          => 'field_band_1_label',
-					'label'        => __( 'Stat 1 — Label', 'greenio' ),
-					'name'         => 'band_1_label',
-					'type'         => 'text',
-					'default_value'=> 'Projects delivered',
-				),
-				// -- Stat 2 --
-				array(
-					'key'          => 'field_band_2_number',
-					'label'        => __( 'Stat 2 — Counter Target', 'greenio' ),
-					'name'         => 'band_2_number',
-					'type'         => 'number',
-					'default_value'=> 98,
-				),
-				array(
-					'key'          => 'field_band_2_suffix',
-					'label'        => __( 'Stat 2 — Suffix', 'greenio' ),
-					'name'         => 'band_2_suffix',
-					'type'         => 'text',
-					'default_value'=> '%',
-				),
-				array(
-					'key'          => 'field_band_2_label',
-					'label'        => __( 'Stat 2 — Label', 'greenio' ),
-					'name'         => 'band_2_label',
-					'type'         => 'text',
-					'default_value'=> 'Client satisfaction',
-				),
-				// -- Stat 3 --
-				array(
-					'key'          => 'field_band_3_number',
-					'label'        => __( 'Stat 3 — Counter Target', 'greenio' ),
-					'name'         => 'band_3_number',
-					'type'         => 'number',
-					'default_value'=> 45,
-				),
-				array(
-					'key'          => 'field_band_3_suffix',
-					'label'        => __( 'Stat 3 — Suffix', 'greenio' ),
-					'name'         => 'band_3_suffix',
-					'type'         => 'text',
-					'default_value'=> 'k+',
-				),
-				array(
-					'key'          => 'field_band_3_label',
-					'label'        => __( 'Stat 3 — Label', 'greenio' ),
-					'name'         => 'band_3_label',
-					'type'         => 'text',
-					'default_value'=> 'Homes powered',
-				),
-				// -- Stat 4 --
-				array(
-					'key'          => 'field_band_4_number',
-					'label'        => __( 'Stat 4 — Counter Target', 'greenio' ),
-					'name'         => 'band_4_number',
-					'type'         => 'number',
-					'default_value'=> 15,
-				),
-				array(
-					'key'          => 'field_band_4_suffix',
-					'label'        => __( 'Stat 4 — Suffix', 'greenio' ),
-					'name'         => 'band_4_suffix',
-					'type'         => 'text',
-					'default_value'=> 'yrs',
-				),
-				array(
-					'key'          => 'field_band_4_label',
-					'label'        => __( 'Stat 4 — Label', 'greenio' ),
-					'name'         => 'band_4_label',
-					'type'         => 'text',
-					'default_value'=> 'Years of expertise',
+					'key'          => 'field_stats_band_repeater',
+					'label'        => __( 'Stat Items', 'greenio' ),
+					'name'         => 'stats_band',
+					'type'         => 'repeater',
+					'instructions' => __( 'The numbers strip. Leave empty to fall back to the built-in defaults.', 'greenio' ),
+					'min'          => 0,
+					'max'          => 8,
+					'layout'       => 'table',
+					'button_label' => __( 'Add Stat', 'greenio' ),
+					'sub_fields'   => array(
+						array(
+							'key'           => 'field_stat_number',
+							'label'         => __( 'Number', 'greenio' ),
+							'name'          => 'number',
+							'type'          => 'number',
+							'instructions'  => __( 'Digits only — the front-end animates a count-up to this value.', 'greenio' ),
+							'wrapper'       => array( 'width' => '30' ),
+						),
+						array(
+							'key'          => 'field_stat_suffix',
+							'label'        => __( 'Suffix', 'greenio' ),
+							'name'         => 'suffix',
+							'type'         => 'text',
+							'instructions' => __( 'e.g. +, %, k+, yrs', 'greenio' ),
+							'wrapper'      => array( 'width' => '20' ),
+						),
+						array(
+							'key'     => 'field_stat_label',
+							'label'   => __( 'Label', 'greenio' ),
+							'name'    => 'label',
+							'type'    => 'text',
+							'wrapper' => array( 'width' => '50' ),
+						),
+					),
 				),
 
 				/* ---- PROJECTS (Featured work) ---- */
@@ -875,74 +732,40 @@ function greenio_register_acf_fields() {
 					'type'         => 'text',
 					'default_value'=> 'Powering communities, one project at a time.',
 				),
-				// -- Project 1 --
 				array(
-					'key'          => 'field_project_1_tag',
-					'label'        => __( 'Project 1 — Tag', 'greenio' ),
-					'name'         => 'project_1_tag',
-					'type'         => 'text',
-					'default_value'=> 'Solar Farm',
-				),
-				array(
-					'key'          => 'field_project_1_title',
-					'label'        => __( 'Project 1 — Title', 'greenio' ),
-					'name'         => 'project_1_title',
-					'type'         => 'text',
-					'default_value'=> 'Sunfield Array — 42 MW',
-				),
-				array(
-					'key'           => 'field_project_1_image',
-					'label'         => __( 'Project 1 — Image', 'greenio' ),
-					'name'          => 'project_1_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-				// -- Project 2 --
-				array(
-					'key'          => 'field_project_2_tag',
-					'label'        => __( 'Project 2 — Tag', 'greenio' ),
-					'name'         => 'project_2_tag',
-					'type'         => 'text',
-					'default_value'=> 'Wind',
-				),
-				array(
-					'key'          => 'field_project_2_title',
-					'label'        => __( 'Project 2 — Title', 'greenio' ),
-					'name'         => 'project_2_title',
-					'type'         => 'text',
-					'default_value'=> 'Coastal Breeze Park',
-				),
-				array(
-					'key'           => 'field_project_2_image',
-					'label'         => __( 'Project 2 — Image', 'greenio' ),
-					'name'          => 'project_2_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-				// -- Project 3 --
-				array(
-					'key'          => 'field_project_3_tag',
-					'label'        => __( 'Project 3 — Tag', 'greenio' ),
-					'name'         => 'project_3_tag',
-					'type'         => 'text',
-					'default_value'=> 'Hydro',
-				),
-				array(
-					'key'          => 'field_project_3_title',
-					'label'        => __( 'Project 3 — Title', 'greenio' ),
-					'name'         => 'project_3_title',
-					'type'         => 'text',
-					'default_value'=> 'Riverstone Plant',
-				),
-				array(
-					'key'           => 'field_project_3_image',
-					'label'         => __( 'Project 3 — Image', 'greenio' ),
-					'name'          => 'project_3_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
+					'key'          => 'field_projects_repeater',
+					'label'        => __( 'Project Cards', 'greenio' ),
+					'name'         => 'projects',
+					'type'         => 'repeater',
+					'instructions' => __( 'The featured project cards. Leave empty to fall back to the built-in defaults.', 'greenio' ),
+					'min'          => 0,
+					'max'          => 12,
+					'layout'       => 'block',
+					'button_label' => __( 'Add Project', 'greenio' ),
+					'sub_fields'   => array(
+						array(
+							'key'     => 'field_project_tag',
+							'label'   => __( 'Tag', 'greenio' ),
+							'name'    => 'tag',
+							'type'    => 'text',
+							'wrapper' => array( 'width' => '30' ),
+						),
+						array(
+							'key'     => 'field_project_title',
+							'label'   => __( 'Title', 'greenio' ),
+							'name'    => 'title',
+							'type'    => 'text',
+							'wrapper' => array( 'width' => '70' ),
+						),
+						array(
+							'key'           => 'field_project_image',
+							'label'         => __( 'Image', 'greenio' ),
+							'name'          => 'image',
+							'type'          => 'image',
+							'return_format' => 'url',
+							'preview_size'  => 'medium',
+						),
+					),
 				),
 
 				/* ---- CTA (Ready to switch?) ---- */

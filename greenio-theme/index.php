@@ -33,39 +33,32 @@ $stat_label  = greenio_field( 'stat_label', __( 'Since 2010, our customers have 
 $stat_number = (int) greenio_field( 'stat_number', 112845311 );
 $stat_unit   = greenio_field( 'stat_unit', 'pounds of CO₂' );
 
-/* Services grid — 4 individual flat cards (free-version friendly, NO repeater).
-   Each card falls back to its original theme text/flag when the field is empty
-   or when ACF is deactivated. Icon is optional (built-in SVG used if empty). */
-$services = array(
-	array(
-		'title'       => greenio_field( 'service_1_title', __( 'Installation', 'greenio' ) ),
-		'description' => greenio_field( 'service_1_desc', __( 'Turn-key solar & wind installation, engineered and commissioned by certified specialists.', 'greenio' ) ),
-		'link'        => greenio_field( 'service_1_link', '#services' ),
-		'icon'        => greenio_image( 'service_1_icon', '' ),
-		'featured'    => (bool) greenio_field( 'service_1_featured', false ),
-	),
-	array(
-		'title'       => greenio_field( 'service_2_title', __( 'Maintenance', 'greenio' ) ),
-		'description' => greenio_field( 'service_2_desc', __( 'Predictive monitoring and rapid servicing keep every panel and turbine at peak output.', 'greenio' ) ),
-		'link'        => greenio_field( 'service_2_link', '#services' ),
-		'icon'        => greenio_image( 'service_2_icon', '' ),
-		'featured'    => (bool) greenio_field( 'service_2_featured', false ),
-	),
-	array(
-		'title'       => greenio_field( 'service_3_title', __( 'Consultation', 'greenio' ) ),
-		'description' => greenio_field( 'service_3_desc', __( 'Data-driven energy audits map the fastest, cleanest path to your net-zero goals.', 'greenio' ) ),
-		'link'        => greenio_field( 'service_3_link', '#services' ),
-		'icon'        => greenio_image( 'service_3_icon', '' ),
-		'featured'    => (bool) greenio_field( 'service_3_featured', false ),
-	),
-	array(
-		'title'       => greenio_field( 'service_4_title', __( 'Microgrid Planning', 'greenio' ) ),
-		'description' => greenio_field( 'service_4_desc', __( 'Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.', 'greenio' ) ),
-		'link'        => greenio_field( 'service_4_link', '#services' ),
-		'icon'        => greenio_image( 'service_4_icon', '' ),
-		'featured'    => (bool) greenio_field( 'service_4_featured', true ),
-	),
-);
+/* Services grid — ACF PRO Repeater ('services'). Falls back to the original
+   hardcoded set when the repeater is empty or ACF is deactivated. Each row's
+   image icon is normalised to a URL via greenio_image_value(). */
+$services_raw = greenio_field( 'services', array() );
+$services     = array();
+
+if ( ! empty( $services_raw ) && is_array( $services_raw ) ) {
+	foreach ( $services_raw as $row ) {
+		$services[] = array(
+			'title'       => isset( $row['title'] ) ? $row['title'] : '',
+			'description' => isset( $row['description'] ) ? $row['description'] : '',
+			'link'        => ! empty( $row['link'] ) ? $row['link'] : '#services',
+			'icon'        => isset( $row['icon'] ) ? greenio_image_value( $row['icon'], '' ) : '',
+			'featured'    => ! empty( $row['featured'] ),
+		);
+	}
+}
+
+if ( empty( $services ) ) {
+	$services = array(
+		array( 'title' => __( 'Installation', 'greenio' ),       'description' => __( 'Turn-key solar & wind installation, engineered and commissioned by certified specialists.', 'greenio' ), 'link' => '#services', 'icon' => '', 'featured' => false ),
+		array( 'title' => __( 'Maintenance', 'greenio' ),        'description' => __( 'Predictive monitoring and rapid servicing keep every panel and turbine at peak output.', 'greenio' ),      'link' => '#services', 'icon' => '', 'featured' => false ),
+		array( 'title' => __( 'Consultation', 'greenio' ),       'description' => __( 'Data-driven energy audits map the fastest, cleanest path to your net-zero goals.', 'greenio' ),           'link' => '#services', 'icon' => '', 'featured' => false ),
+		array( 'title' => __( 'Microgrid Planning', 'greenio' ), 'description' => __( 'Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.', 'greenio' ),   'link' => '#services', 'icon' => '', 'featured' => true ),
+	);
+}
 
 // Built-in SVG icons cycled through service cards that have no custom icon.
 $greenio_default_icons = array(
@@ -121,51 +114,73 @@ $energy_cards = array(
 	),
 );
 
-/* Stats band — 4 flat counter items. */
-$band_items = array(
-	array(
-		'number' => (int) greenio_field( 'band_1_number', 1200 ),
-		'suffix' => greenio_field( 'band_1_suffix', '+' ),
-		'label'  => greenio_field( 'band_1_label', __( 'Projects delivered', 'greenio' ) ),
-	),
-	array(
-		'number' => (int) greenio_field( 'band_2_number', 98 ),
-		'suffix' => greenio_field( 'band_2_suffix', '%' ),
-		'label'  => greenio_field( 'band_2_label', __( 'Client satisfaction', 'greenio' ) ),
-	),
-	array(
-		'number' => (int) greenio_field( 'band_3_number', 45 ),
-		'suffix' => greenio_field( 'band_3_suffix', 'k+' ),
-		'label'  => greenio_field( 'band_3_label', __( 'Homes powered', 'greenio' ) ),
-	),
-	array(
-		'number' => (int) greenio_field( 'band_4_number', 15 ),
-		'suffix' => greenio_field( 'band_4_suffix', 'yrs' ),
-		'label'  => greenio_field( 'band_4_label', __( 'Years of expertise', 'greenio' ) ),
-	),
-);
+/* Stats band — ACF PRO Repeater `stats_band` with graceful fallback. */
+$stats_raw  = greenio_field( 'stats_band', array() );
+$band_items = array();
+if ( ! empty( $stats_raw ) && is_array( $stats_raw ) ) {
+	foreach ( $stats_raw as $row ) {
+		$number = isset( $row['number'] ) ? $row['number'] : '';
+		$suffix = isset( $row['suffix'] ) ? $row['suffix'] : '';
+		$label  = isset( $row['label'] ) ? $row['label'] : '';
+		if ( '' === (string) $number && '' === (string) $suffix && '' === (string) $label ) {
+			continue; // Skip fully-empty rows.
+		}
+		$band_items[] = array(
+			'number' => (int) $number,
+			'suffix' => $suffix,
+			'label'  => $label,
+		);
+	}
+}
+if ( empty( $band_items ) ) {
+	$band_items = array(
+		array( 'number' => 1200, 'suffix' => '+',   'label' => __( 'Projects delivered', 'greenio' ) ),
+		array( 'number' => 98,   'suffix' => '%',   'label' => __( 'Client satisfaction', 'greenio' ) ),
+		array( 'number' => 45,   'suffix' => 'k+',  'label' => __( 'Homes powered', 'greenio' ) ),
+		array( 'number' => 15,   'suffix' => 'yrs', 'label' => __( 'Years of expertise', 'greenio' ) ),
+	);
+}
 
 /* Projects — section heading + 3 flat project cards. */
 $projects_eyebrow = greenio_field( 'projects_eyebrow', __( 'Featured work', 'greenio' ) );
 $projects_title   = greenio_field( 'projects_title', __( 'Powering communities, one project at a time.', 'greenio' ) );
 
-$project_cards = array(
-	array(
-		'tag'   => greenio_field( 'project_1_tag', __( 'Solar Farm', 'greenio' ) ),
-		'title' => greenio_field( 'project_1_title', __( 'Sunfield Array — 42 MW', 'greenio' ) ),
-		'image' => greenio_image( 'project_1_image', 'assets/img/solar.jpg' ),
-	),
-	array(
-		'tag'   => greenio_field( 'project_2_tag', __( 'Wind', 'greenio' ) ),
-		'title' => greenio_field( 'project_2_title', __( 'Coastal Breeze Park', 'greenio' ) ),
-		'image' => greenio_image( 'project_2_image', 'assets/img/storage.jpg' ),
-	),
-	array(
-		'tag'   => greenio_field( 'project_3_tag', __( 'Hydro', 'greenio' ) ),
-		'title' => greenio_field( 'project_3_title', __( 'Riverstone Plant', 'greenio' ) ),
-		'image' => greenio_image( 'project_3_image', 'assets/img/hydro.jpg' ),
-	),
-);
+/* Projects cards — ACF PRO Repeater `projects` with graceful fallback. */
+$projects_raw  = greenio_field( 'projects', array() );
+$project_cards = array();
+if ( ! empty( $projects_raw ) && is_array( $projects_raw ) ) {
+	foreach ( $projects_raw as $row ) {
+		$tag   = isset( $row['tag'] ) ? $row['tag'] : '';
+		$title = isset( $row['title'] ) ? $row['title'] : '';
+		if ( '' === (string) $tag && '' === (string) $title ) {
+			continue; // Skip fully-empty rows.
+		}
+		$project_cards[] = array(
+			'tag'   => $tag,
+			'title' => $title,
+			'image' => isset( $row['image'] ) ? greenio_image_value( $row['image'], '' ) : '',
+		);
+	}
+}
+if ( empty( $project_cards ) ) {
+	$project_cards = array(
+		array(
+			'tag'   => __( 'Solar Farm', 'greenio' ),
+			'title' => __( 'Sunfield Array — 42 MW', 'greenio' ),
+			'image' => greenio_asset( 'assets/img/solar.jpg' ),
+		),
+		array(
+			'tag'   => __( 'Wind', 'greenio' ),
+			'title' => __( 'Coastal Breeze Park', 'greenio' ),
+			'image' => greenio_asset( 'assets/img/storage.jpg' ),
+		),
+		array(
+			'tag'   => __( 'Hydro', 'greenio' ),
+			'title' => __( 'Riverstone Plant', 'greenio' ),
+			'image' => greenio_asset( 'assets/img/hydro.jpg' ),
+		),
+	);
+}
 
 /* CTA. */
 $cta_eyebrow     = greenio_field( 'cta_eyebrow', __( 'Ready to switch?', 'greenio' ) );
