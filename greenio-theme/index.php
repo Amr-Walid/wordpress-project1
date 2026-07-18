@@ -33,16 +33,39 @@ $stat_label  = greenio_field( 'stat_label', __( 'Since 2010, our customers have 
 $stat_number = (int) greenio_field( 'stat_number', 112845311 );
 $stat_unit   = greenio_field( 'stat_unit', 'pounds of CO₂' );
 
-// Services grid (repeater). Fall back to a hardcoded set if empty / no ACF PRO.
-$services = greenio_field( 'services', array() );
-if ( empty( $services ) || ! is_array( $services ) ) {
-	$services = array(
-		array( 'title' => __( 'Installation', 'greenio' ),        'description' => __( 'Turn-key solar & wind installation, engineered and commissioned by certified specialists.', 'greenio' ), 'link' => '#services', 'featured' => false, 'icon' => '' ),
-		array( 'title' => __( 'Maintenance', 'greenio' ),         'description' => __( 'Predictive monitoring and rapid servicing keep every panel and turbine at peak output.', 'greenio' ),      'link' => '#services', 'featured' => false, 'icon' => '' ),
-		array( 'title' => __( 'Consultation', 'greenio' ),        'description' => __( 'Data-driven energy audits map the fastest, cleanest path to your net-zero goals.', 'greenio' ),           'link' => '#services', 'featured' => false, 'icon' => '' ),
-		array( 'title' => __( 'Microgrid Planning', 'greenio' ),  'description' => __( 'Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.', 'greenio' ),   'link' => '#services', 'featured' => true,  'icon' => '' ),
-	);
-}
+/* Services grid — 4 individual flat cards (free-version friendly, NO repeater).
+   Each card falls back to its original theme text/flag when the field is empty
+   or when ACF is deactivated. Icon is optional (built-in SVG used if empty). */
+$services = array(
+	array(
+		'title'       => greenio_field( 'service_1_title', __( 'Installation', 'greenio' ) ),
+		'description' => greenio_field( 'service_1_desc', __( 'Turn-key solar & wind installation, engineered and commissioned by certified specialists.', 'greenio' ) ),
+		'link'        => greenio_field( 'service_1_link', '#services' ),
+		'icon'        => greenio_image( 'service_1_icon', '' ),
+		'featured'    => (bool) greenio_field( 'service_1_featured', false ),
+	),
+	array(
+		'title'       => greenio_field( 'service_2_title', __( 'Maintenance', 'greenio' ) ),
+		'description' => greenio_field( 'service_2_desc', __( 'Predictive monitoring and rapid servicing keep every panel and turbine at peak output.', 'greenio' ) ),
+		'link'        => greenio_field( 'service_2_link', '#services' ),
+		'icon'        => greenio_image( 'service_2_icon', '' ),
+		'featured'    => (bool) greenio_field( 'service_2_featured', false ),
+	),
+	array(
+		'title'       => greenio_field( 'service_3_title', __( 'Consultation', 'greenio' ) ),
+		'description' => greenio_field( 'service_3_desc', __( 'Data-driven energy audits map the fastest, cleanest path to your net-zero goals.', 'greenio' ) ),
+		'link'        => greenio_field( 'service_3_link', '#services' ),
+		'icon'        => greenio_image( 'service_3_icon', '' ),
+		'featured'    => (bool) greenio_field( 'service_3_featured', false ),
+	),
+	array(
+		'title'       => greenio_field( 'service_4_title', __( 'Microgrid Planning', 'greenio' ) ),
+		'description' => greenio_field( 'service_4_desc', __( 'Resilient, AI-optimized microgrids that keep the lights on — fully independent of the grid.', 'greenio' ) ),
+		'link'        => greenio_field( 'service_4_link', '#services' ),
+		'icon'        => greenio_image( 'service_4_icon', '' ),
+		'featured'    => (bool) greenio_field( 'service_4_featured', true ),
+	),
+);
 
 // Built-in SVG icons cycled through service cards that have no custom icon.
 $greenio_default_icons = array(
@@ -205,7 +228,7 @@ $cta_placeholder = greenio_field( 'cta_placeholder', __( 'Enter your email addre
 				<div class="stat-live"><span class="live-dot"></span> <?php esc_html_e( 'Live impact counter', 'greenio' ); ?></div>
 			</article>
 
-			<!-- SERVICE ICON CARDS (repeater) -->
+			<!-- SERVICE ICON CARDS (4 individual flat fields — no repeater) -->
 			<?php
 			$i = 0;
 			foreach ( $services as $svc ) :
@@ -213,19 +236,10 @@ $cta_placeholder = greenio_field( 'cta_placeholder', __( 'Enter your email addre
 				$svc_desc     = isset( $svc['description'] ) ? $svc['description'] : '';
 				$svc_link     = ! empty( $svc['link'] ) ? $svc['link'] : '#services';
 				$svc_featured = ! empty( $svc['featured'] );
-				$svc_icon     = '';
-				// Custom icon image (URL/array/ID) if supplied.
-				if ( ! empty( $svc['icon'] ) ) {
-					if ( is_array( $svc['icon'] ) ) {
-						$svc_icon = ! empty( $svc['icon']['url'] ) ? $svc['icon']['url'] : '';
-					} elseif ( is_numeric( $svc['icon'] ) ) {
-						$svc_icon = wp_get_attachment_image_url( (int) $svc['icon'], 'thumbnail' );
-					} else {
-						$svc_icon = $svc['icon'];
-					}
-				}
+				// Icon already normalised to a URL (or '') by greenio_image().
+				$svc_icon     = ! empty( $svc['icon'] ) ? $svc['icon'] : '';
 				if ( ! $svc_title && ! $svc_desc ) {
-					continue; // skip fully-empty rows.
+					continue; // skip fully-empty cards.
 				}
 				?>
 				<article class="svc-card<?php echo $svc_featured ? ' svc-card--accent' : ''; ?>" data-reveal>
