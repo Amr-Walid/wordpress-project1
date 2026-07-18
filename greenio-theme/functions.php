@@ -491,6 +491,376 @@ function greenio_register_acf_fields() {
 					'type'         => 'text',
 					'default_value'=> 'Energy is the future, make it brilliant.',
 				),
+
+				/* ---- ENERGY GRID (What we offer) ---- */
+				array(
+					'key'   => 'field_energy_tab',
+					'label' => __( 'Energy Grid', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_energy_eyebrow',
+					'label'        => __( 'Section Eyebrow', 'greenio' ),
+					'name'         => 'energy_eyebrow',
+					'type'         => 'text',
+					'default_value'=> 'What we offer',
+				),
+				array(
+					'key'          => 'field_energy_title',
+					'label'        => __( 'Section Title', 'greenio' ),
+					'name'         => 'energy_title',
+					'type'         => 'text',
+					'default_value'=> "A choice that's good for you and the planet.",
+				),
+				array(
+					'key'          => 'field_energy_subtitle',
+					'label'        => __( 'Section Subtitle', 'greenio' ),
+					'name'         => 'energy_subtitle',
+					'type'         => 'textarea',
+					'rows'         => 2,
+					'default_value'=> 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.',
+				),
+
+				// -- Card 1: Wind --
+				array(
+					'key'          => 'field_energy_1_tag',
+					'label'        => __( 'Card 1 — Tag', 'greenio' ),
+					'name'         => 'energy_1_tag',
+					'type'         => 'text',
+					'default_value'=> 'Wind',
+				),
+				array(
+					'key'          => 'field_energy_1_title',
+					'label'        => __( 'Card 1 — Title', 'greenio' ),
+					'name'         => 'energy_1_title',
+					'type'         => 'text',
+					'default_value'=> 'Wind Power',
+				),
+				array(
+					'key'          => 'field_energy_1_desc',
+					'label'        => __( 'Card 1 — Description', 'greenio' ),
+					'name'         => 'energy_1_desc',
+					'type'         => 'textarea',
+					'rows'         => 2,
+					'default_value'=> 'Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.',
+				),
+				array(
+					'key'           => 'field_energy_1_image',
+					'label'         => __( 'Card 1 — Background Image', 'greenio' ),
+					'name'          => 'energy_1_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				// -- Card 2: Water --
+				array(
+					'key'          => 'field_energy_2_tag',
+					'label'        => __( 'Card 2 — Tag', 'greenio' ),
+					'name'         => 'energy_2_tag',
+					'type'         => 'text',
+					'default_value'=> 'Water',
+				),
+				array(
+					'key'          => 'field_energy_2_title',
+					'label'        => __( 'Card 2 — Title', 'greenio' ),
+					'name'         => 'energy_2_title',
+					'type'         => 'text',
+					'default_value'=> 'Hydroelectric',
+				),
+				array(
+					'key'          => 'field_energy_2_desc',
+					'label'        => __( 'Card 2 — Description', 'greenio' ),
+					'name'         => 'energy_2_desc',
+					'type'         => 'textarea',
+					'rows'         => 2,
+					'default_value'=> 'Modern hydro plants deliver clean, dependable baseload power from the flow of water.',
+				),
+				array(
+					'key'           => 'field_energy_2_image',
+					'label'         => __( 'Card 2 — Background Image', 'greenio' ),
+					'name'          => 'energy_2_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				// -- Card 3: Solar --
+				array(
+					'key'          => 'field_energy_3_tag',
+					'label'        => __( 'Card 3 — Tag', 'greenio' ),
+					'name'         => 'energy_3_tag',
+					'type'         => 'text',
+					'default_value'=> 'Solar',
+				),
+				array(
+					'key'          => 'field_energy_3_title',
+					'label'        => __( 'Card 3 — Title', 'greenio' ),
+					'name'         => 'energy_3_title',
+					'type'         => 'text',
+					'default_value'=> 'Solar Power',
+				),
+				array(
+					'key'          => 'field_energy_3_desc',
+					'label'        => __( 'Card 3 — Description', 'greenio' ),
+					'name'         => 'energy_3_desc',
+					'type'         => 'textarea',
+					'rows'         => 2,
+					'default_value'=> 'High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.',
+				),
+				array(
+					'key'           => 'field_energy_3_image',
+					'label'         => __( 'Card 3 — Background Image', 'greenio' ),
+					'name'          => 'energy_3_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				// -- Card 4: Storage --
+				array(
+					'key'          => 'field_energy_4_tag',
+					'label'        => __( 'Card 4 — Tag', 'greenio' ),
+					'name'         => 'energy_4_tag',
+					'type'         => 'text',
+					'default_value'=> 'Storage',
+				),
+				array(
+					'key'          => 'field_energy_4_title',
+					'label'        => __( 'Card 4 — Title', 'greenio' ),
+					'name'         => 'energy_4_title',
+					'type'         => 'text',
+					'default_value'=> 'Smart Battery Storage',
+				),
+				array(
+					'key'          => 'field_energy_4_desc',
+					'label'        => __( 'Card 4 — Description', 'greenio' ),
+					'name'         => 'energy_4_desc',
+					'type'         => 'textarea',
+					'rows'         => 2,
+					'default_value'=> 'Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.',
+				),
+				array(
+					'key'           => 'field_energy_4_image',
+					'label'         => __( 'Card 4 — Background Image', 'greenio' ),
+					'name'          => 'energy_4_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				/* ---- STATS BAND ---- */
+				array(
+					'key'   => 'field_band_tab',
+					'label' => __( 'Stats Band', 'greenio' ),
+					'type'  => 'tab',
+				),
+				// -- Stat 1 --
+				array(
+					'key'          => 'field_band_1_number',
+					'label'        => __( 'Stat 1 — Counter Target', 'greenio' ),
+					'name'         => 'band_1_number',
+					'type'         => 'number',
+					'default_value'=> 1200,
+				),
+				array(
+					'key'          => 'field_band_1_suffix',
+					'label'        => __( 'Stat 1 — Suffix', 'greenio' ),
+					'name'         => 'band_1_suffix',
+					'type'         => 'text',
+					'default_value'=> '+',
+				),
+				array(
+					'key'          => 'field_band_1_label',
+					'label'        => __( 'Stat 1 — Label', 'greenio' ),
+					'name'         => 'band_1_label',
+					'type'         => 'text',
+					'default_value'=> 'Projects delivered',
+				),
+				// -- Stat 2 --
+				array(
+					'key'          => 'field_band_2_number',
+					'label'        => __( 'Stat 2 — Counter Target', 'greenio' ),
+					'name'         => 'band_2_number',
+					'type'         => 'number',
+					'default_value'=> 98,
+				),
+				array(
+					'key'          => 'field_band_2_suffix',
+					'label'        => __( 'Stat 2 — Suffix', 'greenio' ),
+					'name'         => 'band_2_suffix',
+					'type'         => 'text',
+					'default_value'=> '%',
+				),
+				array(
+					'key'          => 'field_band_2_label',
+					'label'        => __( 'Stat 2 — Label', 'greenio' ),
+					'name'         => 'band_2_label',
+					'type'         => 'text',
+					'default_value'=> 'Client satisfaction',
+				),
+				// -- Stat 3 --
+				array(
+					'key'          => 'field_band_3_number',
+					'label'        => __( 'Stat 3 — Counter Target', 'greenio' ),
+					'name'         => 'band_3_number',
+					'type'         => 'number',
+					'default_value'=> 45,
+				),
+				array(
+					'key'          => 'field_band_3_suffix',
+					'label'        => __( 'Stat 3 — Suffix', 'greenio' ),
+					'name'         => 'band_3_suffix',
+					'type'         => 'text',
+					'default_value'=> 'k+',
+				),
+				array(
+					'key'          => 'field_band_3_label',
+					'label'        => __( 'Stat 3 — Label', 'greenio' ),
+					'name'         => 'band_3_label',
+					'type'         => 'text',
+					'default_value'=> 'Homes powered',
+				),
+				// -- Stat 4 --
+				array(
+					'key'          => 'field_band_4_number',
+					'label'        => __( 'Stat 4 — Counter Target', 'greenio' ),
+					'name'         => 'band_4_number',
+					'type'         => 'number',
+					'default_value'=> 15,
+				),
+				array(
+					'key'          => 'field_band_4_suffix',
+					'label'        => __( 'Stat 4 — Suffix', 'greenio' ),
+					'name'         => 'band_4_suffix',
+					'type'         => 'text',
+					'default_value'=> 'yrs',
+				),
+				array(
+					'key'          => 'field_band_4_label',
+					'label'        => __( 'Stat 4 — Label', 'greenio' ),
+					'name'         => 'band_4_label',
+					'type'         => 'text',
+					'default_value'=> 'Years of expertise',
+				),
+
+				/* ---- PROJECTS (Featured work) ---- */
+				array(
+					'key'   => 'field_projects_tab',
+					'label' => __( 'Projects', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_projects_eyebrow',
+					'label'        => __( 'Section Eyebrow', 'greenio' ),
+					'name'         => 'projects_eyebrow',
+					'type'         => 'text',
+					'default_value'=> 'Featured work',
+				),
+				array(
+					'key'          => 'field_projects_title',
+					'label'        => __( 'Section Title', 'greenio' ),
+					'name'         => 'projects_title',
+					'type'         => 'text',
+					'default_value'=> 'Powering communities, one project at a time.',
+				),
+				// -- Project 1 --
+				array(
+					'key'          => 'field_project_1_tag',
+					'label'        => __( 'Project 1 — Tag', 'greenio' ),
+					'name'         => 'project_1_tag',
+					'type'         => 'text',
+					'default_value'=> 'Solar Farm',
+				),
+				array(
+					'key'          => 'field_project_1_title',
+					'label'        => __( 'Project 1 — Title', 'greenio' ),
+					'name'         => 'project_1_title',
+					'type'         => 'text',
+					'default_value'=> 'Sunfield Array — 42 MW',
+				),
+				array(
+					'key'           => 'field_project_1_image',
+					'label'         => __( 'Project 1 — Image', 'greenio' ),
+					'name'          => 'project_1_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+				// -- Project 2 --
+				array(
+					'key'          => 'field_project_2_tag',
+					'label'        => __( 'Project 2 — Tag', 'greenio' ),
+					'name'         => 'project_2_tag',
+					'type'         => 'text',
+					'default_value'=> 'Wind',
+				),
+				array(
+					'key'          => 'field_project_2_title',
+					'label'        => __( 'Project 2 — Title', 'greenio' ),
+					'name'         => 'project_2_title',
+					'type'         => 'text',
+					'default_value'=> 'Coastal Breeze Park',
+				),
+				array(
+					'key'           => 'field_project_2_image',
+					'label'         => __( 'Project 2 — Image', 'greenio' ),
+					'name'          => 'project_2_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+				// -- Project 3 --
+				array(
+					'key'          => 'field_project_3_tag',
+					'label'        => __( 'Project 3 — Tag', 'greenio' ),
+					'name'         => 'project_3_tag',
+					'type'         => 'text',
+					'default_value'=> 'Hydro',
+				),
+				array(
+					'key'          => 'field_project_3_title',
+					'label'        => __( 'Project 3 — Title', 'greenio' ),
+					'name'         => 'project_3_title',
+					'type'         => 'text',
+					'default_value'=> 'Riverstone Plant',
+				),
+				array(
+					'key'           => 'field_project_3_image',
+					'label'         => __( 'Project 3 — Image', 'greenio' ),
+					'name'          => 'project_3_image',
+					'type'          => 'image',
+					'return_format' => 'url',
+					'preview_size'  => 'medium',
+				),
+
+				/* ---- CTA (Ready to switch?) ---- */
+				array(
+					'key'   => 'field_cta_tab',
+					'label' => __( 'CTA Section', 'greenio' ),
+					'type'  => 'tab',
+				),
+				array(
+					'key'          => 'field_cta_eyebrow',
+					'label'        => __( 'Eyebrow Text', 'greenio' ),
+					'name'         => 'cta_eyebrow',
+					'type'         => 'text',
+					'default_value'=> 'Ready to switch?',
+				),
+				array(
+					'key'          => 'field_cta_title',
+					'label'        => __( 'Main Title', 'greenio' ),
+					'name'         => 'cta_title',
+					'type'         => 'text',
+					'default_value'=> 'Start powering your world with clean energy today.',
+				),
+				array(
+					'key'          => 'field_cta_placeholder',
+					'label'        => __( 'Email Input Placeholder', 'greenio' ),
+					'name'         => 'cta_placeholder',
+					'type'         => 'text',
+					'default_value'=> 'Enter your email address',
+				),
 			),
 			'location' => array(
 				array(

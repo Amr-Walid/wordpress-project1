@@ -62,16 +62,92 @@ $about_image         = greenio_image( 'about_image', 'assets/img/wind.jpg' );
 $about_overlay_tag   = greenio_field( 'about_overlay_tag', __( 'Renewable energy', 'greenio' ) );
 $about_overlay_title = greenio_field( 'about_overlay_title', __( 'Energy is the future, make it brilliant.', 'greenio' ) );
 
-/* Energy grid images (kept theme-managed & filterable, as before). */
-$greenio_img = apply_filters(
-	'greenio_placeholder_images',
+/* Energy grid — section heading + 4 flat cards (free-version friendly, no repeater). */
+$energy_eyebrow  = greenio_field( 'energy_eyebrow', __( 'What we offer', 'greenio' ) );
+$energy_title    = greenio_field( 'energy_title', __( "A choice that's good for you and the planet.", 'greenio' ) );
+$energy_subtitle = greenio_field( 'energy_subtitle', __( 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.', 'greenio' ) );
+
+$energy_cards = array(
 	array(
-		'turbine' => greenio_asset( 'assets/img/wind.jpg' ),
-		'hydro'   => greenio_asset( 'assets/img/hydro.jpg' ),
-		'solar'   => greenio_asset( 'assets/img/solar.jpg' ),
-		'storage' => greenio_asset( 'assets/img/storage.jpg' ),
-	)
+		'tag'   => greenio_field( 'energy_1_tag', __( 'Wind', 'greenio' ) ),
+		'title' => greenio_field( 'energy_1_title', __( 'Wind Power', 'greenio' ) ),
+		'desc'  => greenio_field( 'energy_1_desc', __( 'Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.', 'greenio' ) ),
+		'image' => greenio_image( 'energy_1_image', 'assets/img/wind.jpg' ),
+		'class' => 'energy-card--tall',
+	),
+	array(
+		'tag'   => greenio_field( 'energy_2_tag', __( 'Water', 'greenio' ) ),
+		'title' => greenio_field( 'energy_2_title', __( 'Hydroelectric', 'greenio' ) ),
+		'desc'  => greenio_field( 'energy_2_desc', __( 'Modern hydro plants deliver clean, dependable baseload power from the flow of water.', 'greenio' ) ),
+		'image' => greenio_image( 'energy_2_image', 'assets/img/hydro.jpg' ),
+		'class' => '',
+	),
+	array(
+		'tag'   => greenio_field( 'energy_3_tag', __( 'Solar', 'greenio' ) ),
+		'title' => greenio_field( 'energy_3_title', __( 'Solar Power', 'greenio' ) ),
+		'desc'  => greenio_field( 'energy_3_desc', __( 'High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.', 'greenio' ) ),
+		'image' => greenio_image( 'energy_3_image', 'assets/img/solar.jpg' ),
+		'class' => '',
+	),
+	array(
+		'tag'   => greenio_field( 'energy_4_tag', __( 'Storage', 'greenio' ) ),
+		'title' => greenio_field( 'energy_4_title', __( 'Smart Battery Storage', 'greenio' ) ),
+		'desc'  => greenio_field( 'energy_4_desc', __( 'Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.', 'greenio' ) ),
+		'image' => greenio_image( 'energy_4_image', 'assets/img/storage.jpg' ),
+		'class' => 'energy-card--wide',
+	),
 );
+
+/* Stats band — 4 flat counter items. */
+$band_items = array(
+	array(
+		'number' => (int) greenio_field( 'band_1_number', 1200 ),
+		'suffix' => greenio_field( 'band_1_suffix', '+' ),
+		'label'  => greenio_field( 'band_1_label', __( 'Projects delivered', 'greenio' ) ),
+	),
+	array(
+		'number' => (int) greenio_field( 'band_2_number', 98 ),
+		'suffix' => greenio_field( 'band_2_suffix', '%' ),
+		'label'  => greenio_field( 'band_2_label', __( 'Client satisfaction', 'greenio' ) ),
+	),
+	array(
+		'number' => (int) greenio_field( 'band_3_number', 45 ),
+		'suffix' => greenio_field( 'band_3_suffix', 'k+' ),
+		'label'  => greenio_field( 'band_3_label', __( 'Homes powered', 'greenio' ) ),
+	),
+	array(
+		'number' => (int) greenio_field( 'band_4_number', 15 ),
+		'suffix' => greenio_field( 'band_4_suffix', 'yrs' ),
+		'label'  => greenio_field( 'band_4_label', __( 'Years of expertise', 'greenio' ) ),
+	),
+);
+
+/* Projects — section heading + 3 flat project cards. */
+$projects_eyebrow = greenio_field( 'projects_eyebrow', __( 'Featured work', 'greenio' ) );
+$projects_title   = greenio_field( 'projects_title', __( 'Powering communities, one project at a time.', 'greenio' ) );
+
+$project_cards = array(
+	array(
+		'tag'   => greenio_field( 'project_1_tag', __( 'Solar Farm', 'greenio' ) ),
+		'title' => greenio_field( 'project_1_title', __( 'Sunfield Array — 42 MW', 'greenio' ) ),
+		'image' => greenio_image( 'project_1_image', 'assets/img/solar.jpg' ),
+	),
+	array(
+		'tag'   => greenio_field( 'project_2_tag', __( 'Wind', 'greenio' ) ),
+		'title' => greenio_field( 'project_2_title', __( 'Coastal Breeze Park', 'greenio' ) ),
+		'image' => greenio_image( 'project_2_image', 'assets/img/storage.jpg' ),
+	),
+	array(
+		'tag'   => greenio_field( 'project_3_tag', __( 'Hydro', 'greenio' ) ),
+		'title' => greenio_field( 'project_3_title', __( 'Riverstone Plant', 'greenio' ) ),
+		'image' => greenio_image( 'project_3_image', 'assets/img/hydro.jpg' ),
+	),
+);
+
+/* CTA. */
+$cta_eyebrow     = greenio_field( 'cta_eyebrow', __( 'Ready to switch?', 'greenio' ) );
+$cta_title       = greenio_field( 'cta_title', __( 'Start powering your world with clean energy today.', 'greenio' ) );
+$cta_placeholder = greenio_field( 'cta_placeholder', __( 'Enter your email address', 'greenio' ) );
 ?>
 
 <!-- ============ HERO ============ -->
@@ -181,47 +257,37 @@ $greenio_img = apply_filters(
 <section class="services" id="services">
 	<div class="container">
 		<div class="section-head" data-reveal>
-			<span class="eyebrow eyebrow-center"><?php esc_html_e( 'What we offer', 'greenio' ); ?></span>
-			<h2 class="section-title"><?php esc_html_e( "A choice that's good for you", 'greenio' ); ?><br class="d-desktop"> <?php esc_html_e( 'and the planet.', 'greenio' ); ?></h2>
-			<p class="section-lead"><?php esc_html_e( 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.', 'greenio' ); ?></p>
+			<?php if ( $energy_eyebrow ) : ?>
+				<span class="eyebrow eyebrow-center"><?php echo esc_html( $energy_eyebrow ); ?></span>
+			<?php endif; ?>
+			<?php if ( $energy_title ) : ?>
+				<h2 class="section-title"><?php echo esc_html( $energy_title ); ?></h2>
+			<?php endif; ?>
+			<?php if ( $energy_subtitle ) : ?>
+				<p class="section-lead"><?php echo esc_html( $energy_subtitle ); ?></p>
+			<?php endif; ?>
 		</div>
 
 		<div class="energy-grid">
-			<article class="energy-card energy-card--tall" data-reveal>
-				<div class="energy-img" style="background-image:url('<?php echo esc_url( $greenio_img['turbine'] ); ?>')"></div>
-				<div class="energy-body">
-					<span class="tag"><?php esc_html_e( 'Wind', 'greenio' ); ?></span>
-					<h3><?php esc_html_e( 'Wind Power', 'greenio' ); ?></h3>
-					<p><?php esc_html_e( 'Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.', 'greenio' ); ?></p>
-				</div>
-			</article>
-
-			<article class="energy-card" data-reveal>
-				<div class="energy-img" style="background-image:url('<?php echo esc_url( $greenio_img['hydro'] ); ?>')"></div>
-				<div class="energy-body">
-					<span class="tag"><?php esc_html_e( 'Water', 'greenio' ); ?></span>
-					<h3><?php esc_html_e( 'Hydroelectric', 'greenio' ); ?></h3>
-					<p><?php esc_html_e( 'Modern hydro plants deliver clean, dependable baseload power from the flow of water.', 'greenio' ); ?></p>
-				</div>
-			</article>
-
-			<article class="energy-card" data-reveal>
-				<div class="energy-img" style="background-image:url('<?php echo esc_url( $greenio_img['solar'] ); ?>')"></div>
-				<div class="energy-body">
-					<span class="tag"><?php esc_html_e( 'Solar', 'greenio' ); ?></span>
-					<h3><?php esc_html_e( 'Solar Power', 'greenio' ); ?></h3>
-					<p><?php esc_html_e( 'High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.', 'greenio' ); ?></p>
-				</div>
-			</article>
-
-			<article class="energy-card energy-card--wide" data-reveal>
-				<div class="energy-img" style="background-image:url('<?php echo esc_url( $greenio_img['storage'] ); ?>')"></div>
-				<div class="energy-body">
-					<span class="tag"><?php esc_html_e( 'Storage', 'greenio' ); ?></span>
-					<h3><?php esc_html_e( 'Smart Battery Storage', 'greenio' ); ?></h3>
-					<p><?php esc_html_e( 'Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.', 'greenio' ); ?></p>
-				</div>
-			</article>
+			<?php foreach ( $energy_cards as $card ) : ?>
+				<?php if ( ! $card['tag'] && ! $card['title'] && ! $card['desc'] ) { continue; } // skip fully-empty card. ?>
+				<article class="energy-card<?php echo $card['class'] ? ' ' . esc_attr( $card['class'] ) : ''; ?>" data-reveal>
+					<?php if ( $card['image'] ) : ?>
+						<div class="energy-img" style="background-image:url('<?php echo esc_url( $card['image'] ); ?>')"></div>
+					<?php endif; ?>
+					<div class="energy-body">
+						<?php if ( $card['tag'] ) : ?>
+							<span class="tag"><?php echo esc_html( $card['tag'] ); ?></span>
+						<?php endif; ?>
+						<?php if ( $card['title'] ) : ?>
+							<h3><?php echo esc_html( $card['title'] ); ?></h3>
+						<?php endif; ?>
+						<?php if ( $card['desc'] ) : ?>
+							<p><?php echo esc_html( $card['desc'] ); ?></p>
+						<?php endif; ?>
+					</div>
+				</article>
+			<?php endforeach; ?>
 		</div>
 	</div>
 </section>
@@ -278,10 +344,15 @@ $greenio_img = apply_filters(
 <!-- ============ STATS BAND ============ -->
 <section class="band">
 	<div class="container band-grid">
-		<div class="band-item" data-reveal><span class="band-num"><span class="counter" data-target="1200" data-suffix="+">0</span></span><span class="band-label"><?php esc_html_e( 'Projects delivered', 'greenio' ); ?></span></div>
-		<div class="band-item" data-reveal><span class="band-num"><span class="counter" data-target="98" data-suffix="%">0</span></span><span class="band-label"><?php esc_html_e( 'Client satisfaction', 'greenio' ); ?></span></div>
-		<div class="band-item" data-reveal><span class="band-num"><span class="counter" data-target="45" data-suffix="k+">0</span></span><span class="band-label"><?php esc_html_e( 'Homes powered', 'greenio' ); ?></span></div>
-		<div class="band-item" data-reveal><span class="band-num"><span class="counter" data-target="15" data-suffix="yrs">0</span></span><span class="band-label"><?php esc_html_e( 'Years of expertise', 'greenio' ); ?></span></div>
+		<?php foreach ( $band_items as $item ) : ?>
+			<?php if ( ! $item['label'] && ! $item['number'] ) { continue; } // skip empty. ?>
+			<div class="band-item" data-reveal>
+				<span class="band-num"><span class="counter" data-target="<?php echo esc_attr( $item['number'] ); ?>" data-suffix="<?php echo esc_attr( $item['suffix'] ); ?>">0</span></span>
+				<?php if ( $item['label'] ) : ?>
+					<span class="band-label"><?php echo esc_html( $item['label'] ); ?></span>
+				<?php endif; ?>
+			</div>
+		<?php endforeach; ?>
 	</div>
 </section>
 
@@ -289,22 +360,30 @@ $greenio_img = apply_filters(
 <section class="projects" id="projects">
 	<div class="container">
 		<div class="section-head" data-reveal>
-			<span class="eyebrow eyebrow-center"><?php esc_html_e( 'Featured work', 'greenio' ); ?></span>
-			<h2 class="section-title"><?php esc_html_e( 'Powering communities,', 'greenio' ); ?><br class="d-desktop"> <?php esc_html_e( 'one project at a time.', 'greenio' ); ?></h2>
+			<?php if ( $projects_eyebrow ) : ?>
+				<span class="eyebrow eyebrow-center"><?php echo esc_html( $projects_eyebrow ); ?></span>
+			<?php endif; ?>
+			<?php if ( $projects_title ) : ?>
+				<h2 class="section-title"><?php echo esc_html( $projects_title ); ?></h2>
+			<?php endif; ?>
 		</div>
 		<div class="project-grid">
-			<article class="project-card" data-reveal>
-				<div class="project-img" style="background-image:url('<?php echo esc_url( $greenio_img['solar'] ); ?>')"></div>
-				<div class="project-meta"><span class="tag"><?php esc_html_e( 'Solar Farm', 'greenio' ); ?></span><h3><?php esc_html_e( 'Sunfield Array — 42 MW', 'greenio' ); ?></h3></div>
-			</article>
-			<article class="project-card" data-reveal>
-				<div class="project-img" style="background-image:url('<?php echo esc_url( $greenio_img['storage'] ); ?>')"></div>
-				<div class="project-meta"><span class="tag"><?php esc_html_e( 'Wind', 'greenio' ); ?></span><h3><?php esc_html_e( 'Coastal Breeze Park', 'greenio' ); ?></h3></div>
-			</article>
-			<article class="project-card" data-reveal>
-				<div class="project-img" style="background-image:url('<?php echo esc_url( $greenio_img['hydro'] ); ?>')"></div>
-				<div class="project-meta"><span class="tag"><?php esc_html_e( 'Hydro', 'greenio' ); ?></span><h3><?php esc_html_e( 'Riverstone Plant', 'greenio' ); ?></h3></div>
-			</article>
+			<?php foreach ( $project_cards as $project ) : ?>
+				<?php if ( ! $project['tag'] && ! $project['title'] ) { continue; } // skip empty. ?>
+				<article class="project-card" data-reveal>
+					<?php if ( $project['image'] ) : ?>
+						<div class="project-img" style="background-image:url('<?php echo esc_url( $project['image'] ); ?>')"></div>
+					<?php endif; ?>
+					<div class="project-meta">
+						<?php if ( $project['tag'] ) : ?>
+							<span class="tag"><?php echo esc_html( $project['tag'] ); ?></span>
+						<?php endif; ?>
+						<?php if ( $project['title'] ) : ?>
+							<h3><?php echo esc_html( $project['title'] ); ?></h3>
+						<?php endif; ?>
+					</div>
+				</article>
+			<?php endforeach; ?>
 		</div>
 	</div>
 </section>
@@ -313,11 +392,15 @@ $greenio_img = apply_filters(
 <section class="cta" id="contact">
 	<div class="container cta-inner" data-reveal>
 		<div class="cta-copy">
-			<span class="eyebrow eyebrow-light"><?php esc_html_e( 'Ready to switch?', 'greenio' ); ?></span>
-			<h2><?php esc_html_e( 'Start powering your world with clean energy today.', 'greenio' ); ?></h2>
+			<?php if ( $cta_eyebrow ) : ?>
+				<span class="eyebrow eyebrow-light"><?php echo esc_html( $cta_eyebrow ); ?></span>
+			<?php endif; ?>
+			<?php if ( $cta_title ) : ?>
+				<h2><?php echo esc_html( $cta_title ); ?></h2>
+			<?php endif; ?>
 		</div>
 		<form class="cta-form" onsubmit="return false;">
-			<input type="email" placeholder="<?php esc_attr_e( 'Enter your email address', 'greenio' ); ?>" aria-label="<?php esc_attr_e( 'Email', 'greenio' ); ?>" required />
+			<input type="email" placeholder="<?php echo esc_attr( $cta_placeholder ); ?>" aria-label="<?php esc_attr_e( 'Email', 'greenio' ); ?>" required />
 			<button type="submit" class="btn btn-yellow"><?php echo esc_html( $hero_cta_text ); ?></button>
 		</form>
 	</div>
