@@ -15,15 +15,49 @@ zig-zag "Keep your environment clean" section.
 ```
 greenio-theme/
 ├── style.css          # WP theme header block + all premium CSS (overlap, responsive)
-├── functions.php      # Enqueues style.css + main.js, theme supports, menus, widgets
-├── header.php         # <head>, wp_head(), text logo, centered nav, yellow CTA
-├── footer.php         # Footer layout, wp_footer(), closing tags
-├── index.php          # Landing template: hero, stat card, service grid, zig-zag, CTA
+├── functions.php      # Enqueues assets, theme supports, menus, widgets + Carbon Fields
+├── header.php         # <head>, wp_head(), logo, centered nav, yellow CTA (theme options)
+├── footer.php         # Footer layout (theme options), wp_footer(), closing tags
+├── index.php          # Landing template (Carbon Fields-powered, graceful fallbacks)
+├── front-page.php     # Static front-page template (mirror of index.php)
+├── composer.json      # Declares the htmlburger/carbon-fields dependency
+├── composer.lock      # Locked to Carbon Fields v3.6.x
+├── vendor/            # Bundled Carbon Fields library (committed → works out-of-the-box)
 ├── README.md
 └── assets/
     ├── js/main.js     # Live counters, smooth scroll, parallax, micro-interactions
     └── img/           # Bundled demo images (self-contained)
 ```
+
+## Content management — Carbon Fields (free & open-source)
+
+All editable content is powered by **[Carbon Fields](https://carbonfields.net/)**,
+a free MIT-licensed fields library bundled *inside* the theme via Composer — **no
+plugin required**. It is loaded through the Composer autoloader and booted on the
+`after_setup_theme` hook (`Carbon_Fields\Carbon_Fields::boot()`); containers are
+declared on the `carbon_fields_register_fields` action.
+
+Two containers are registered in `functions.php`:
+
+1. **Theme Options page** (`Appearance/side menu → Theme Settings`) — global
+   settings: Logo Text/Image, Header CTA Text/Link, and Footer About/Email/
+   Phone/Address/Copyright. Read in templates with `carbon_get_theme_option()`.
+2. **Front Page** post-meta container — shown on the page set under
+   *Settings → Reading → page_on_front*. Includes three **`complex` fields**
+   (Carbon Fields' free repeater):
+   - `services` — Title, Description, Link, Icon (image), Featured (checkbox)
+   - `stats_band` — Number, Suffix, Label
+   - `projects` — Tag, Title, Image
+   Plus Hero, Stats Card, About/Zig-Zag, Energy Grid and CTA fields. Read in
+   templates with `carbon_get_post_meta()`.
+
+Every value is wrapped by the `greenio_field()` / `greenio_image()` helpers,
+which return the stored value when present and otherwise fall back to the
+built-in default content — so the site renders perfectly even before any field
+is filled in (or if the bundled library is ever unavailable).
+
+> **Rebuilding the library:** `vendor/` is committed so the theme works on
+> upload. To regenerate it, run `composer install` inside the theme folder.
 
 ## Installation
 1. Zip the `greenio-theme` folder (or use the provided `greenio-theme.zip`).

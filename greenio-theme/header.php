@@ -24,7 +24,7 @@
 <a class="screen-reader-text" href="#content"><?php esc_html_e( 'Skip to content', 'greenio' ); ?></a>
 
 <?php
-// ---- Global header settings from ACF Options page (with fallbacks) ----
+// ---- Global header settings from Carbon Fields Theme Options (with fallbacks) ----
 $logo_text       = greenio_field( 'logo_text', 'Greenio', 'option' );
 $logo_image      = greenio_image( 'logo_image', '', 'medium', 'option' );
 $header_cta_text = greenio_field( 'header_cta_text', __( 'Get Started', 'greenio' ), 'option' );
@@ -33,7 +33,7 @@ $header_cta_link = greenio_field( 'header_cta_link', '#contact', 'option' );
 <header class="site-header" id="siteHeader">
 	<div class="container header-inner">
 
-		<?php // ---- Logo: WP custom logo > ACF logo image > ACF/text logo ---- ?>
+		<?php // ---- Logo: WP custom logo > theme-option logo image > text logo ---- ?>
 		<?php if ( has_custom_logo() ) : ?>
 			<div class="logo"><?php the_custom_logo(); ?></div>
 		<?php elseif ( $logo_image ) : ?>

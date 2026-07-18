@@ -10,14 +10,14 @@
 </main><!-- #content -->
 
 <?php
-// ---- Global footer settings from ACF Options page (with fallbacks) ----
+// ---- Global footer settings from Carbon Fields Theme Options (with fallbacks) ----
 $footer_logo_text = greenio_field( 'logo_text', 'Greenio', 'option' );
 $footer_logo_img  = greenio_image( 'logo_image', '', 'medium', 'option' );
 $footer_about     = greenio_field( 'footer_about', ( get_bloginfo( 'description' ) ? get_bloginfo( 'description' ) : __( 'The better source of energy for the better tomorrow. 100% clean. 100% future-ready.', 'greenio' ) ), 'option' );
 $footer_email     = greenio_field( 'footer_email', 'hello@greenio.energy', 'option' );
 $footer_phone     = greenio_field( 'footer_phone', '+1 (800) 555-0199', 'option' );
 $footer_address   = greenio_field( 'footer_address', '123 Clean Energy Blvd', 'option' );
-$footer_copyright = greenio_field( 'footer_copyright', '', 'option' );
+$footer_copyright = greenio_field( 'footer_copyright', __( 'Crafted for a sustainable world.', 'greenio' ), 'option' );
 ?>
 <footer class="site-footer" id="pages">
 	<div class="container footer-grid">
@@ -78,12 +78,10 @@ $footer_copyright = greenio_field( 'footer_copyright', '', 'option' );
 	</div>
 
 	<div class="container footer-bottom">
+		<p>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. <?php esc_html_e( 'All rights reserved.', 'greenio' ); ?></p>
 		<?php if ( $footer_copyright ) : ?>
 			<p><?php echo esc_html( str_replace( '{year}', gmdate( 'Y' ), $footer_copyright ) ); ?></p>
-		<?php else : ?>
-			<p>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. <?php esc_html_e( 'All rights reserved.', 'greenio' ); ?></p>
 		<?php endif; ?>
-		<p><?php esc_html_e( 'Crafted for a sustainable world.', 'greenio' ); ?></p>
 	</div>
 </footer>
 

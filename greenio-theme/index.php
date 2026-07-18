@@ -1,12 +1,13 @@
 <?php
 /**
- * The main template file — Greenio one-page landing (ACF-powered).
+ * The main template file — Greenio one-page landing (Carbon Fields-powered).
  *
- * All content is editable from the WordPress dashboard when Advanced Custom
- * Fields is active (see the field groups registered in functions.php). Every
- * field is wrapped with the greenio_field() / greenio_image() helpers, which
- * fall back to sensible defaults so the layout NEVER breaks when a field is
- * empty or when ACF is not installed.
+ * All content is editable from the WordPress dashboard via Carbon Fields (the
+ * free, open-source library bundled with the theme — see the containers
+ * registered in functions.php). Every field is wrapped with the greenio_field()
+ * / greenio_image() helpers, which read carbon_get_post_meta() /
+ * carbon_get_theme_option() and fall back to sensible defaults so the layout
+ * NEVER breaks when a field is empty or Carbon Fields is unavailable.
  *
  * @package Greenio
  */
@@ -14,8 +15,9 @@
 get_header();
 
 /* -------------------------------------------------------------------------
- * Resolve all fields up-front (with defaults). $post_id defaults to the
- * current (front) page for get_field().
+ * Resolve all fields up-front (with defaults). Post-meta fields read from the
+ * current (front) page via carbon_get_post_meta(); the greenio_field() helper
+ * resolves the current post ID automatically.
  * ---------------------------------------------------------------------- */
 
 // Hero.
@@ -33,9 +35,10 @@ $stat_label  = greenio_field( 'stat_label', __( 'Since 2010, our customers have 
 $stat_number = (int) greenio_field( 'stat_number', 112845311 );
 $stat_unit   = greenio_field( 'stat_unit', 'pounds of CO₂' );
 
-/* Services grid — ACF PRO Repeater ('services'). Falls back to the original
-   hardcoded set when the repeater is empty or ACF is deactivated. Each row's
-   image icon is normalised to a URL via greenio_image_value(). */
+/* Services grid — Carbon Fields `complex` field ('services'). Falls back to the
+   original hardcoded set when the complex field is empty or Carbon Fields is
+   unavailable. Each row's image icon is normalised to a URL via
+   greenio_image_value(); the `featured` checkbox stores 'yes' when enabled. */
 $services_raw = greenio_field( 'services', array() );
 $services     = array();
 
@@ -78,7 +81,7 @@ $about_image         = greenio_image( 'about_image', 'assets/img/wind.jpg' );
 $about_overlay_tag   = greenio_field( 'about_overlay_tag', __( 'Renewable energy', 'greenio' ) );
 $about_overlay_title = greenio_field( 'about_overlay_title', __( 'Energy is the future, make it brilliant.', 'greenio' ) );
 
-/* Energy grid — section heading + 4 flat cards (free-version friendly, no repeater). */
+/* Energy grid — section heading + 4 fixed cards (individual meta fields). */
 $energy_eyebrow  = greenio_field( 'energy_eyebrow', __( 'What we offer', 'greenio' ) );
 $energy_title    = greenio_field( 'energy_title', __( "A choice that's good for you and the planet.", 'greenio' ) );
 $energy_subtitle = greenio_field( 'energy_subtitle', __( 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.', 'greenio' ) );
@@ -114,7 +117,7 @@ $energy_cards = array(
 	),
 );
 
-/* Stats band — ACF PRO Repeater `stats_band` with graceful fallback. */
+/* Stats band — Carbon Fields `complex` field `stats_band` with graceful fallback. */
 $stats_raw  = greenio_field( 'stats_band', array() );
 $band_items = array();
 if ( ! empty( $stats_raw ) && is_array( $stats_raw ) ) {
@@ -145,7 +148,7 @@ if ( empty( $band_items ) ) {
 $projects_eyebrow = greenio_field( 'projects_eyebrow', __( 'Featured work', 'greenio' ) );
 $projects_title   = greenio_field( 'projects_title', __( 'Powering communities, one project at a time.', 'greenio' ) );
 
-/* Projects cards — ACF PRO Repeater `projects` with graceful fallback. */
+/* Projects cards — Carbon Fields `complex` field `projects` with graceful fallback. */
 $projects_raw  = greenio_field( 'projects', array() );
 $project_cards = array();
 if ( ! empty( $projects_raw ) && is_array( $projects_raw ) ) {
@@ -243,7 +246,7 @@ $cta_placeholder = greenio_field( 'cta_placeholder', __( 'Enter your email addre
 				<div class="stat-live"><span class="live-dot"></span> <?php esc_html_e( 'Live impact counter', 'greenio' ); ?></div>
 			</article>
 
-			<!-- SERVICE ICON CARDS (4 individual flat fields — no repeater) -->
+			<!-- SERVICE ICON CARDS (Carbon Fields `services` complex field) -->
 			<?php
 			$i = 0;
 			foreach ( $services as $svc ) :

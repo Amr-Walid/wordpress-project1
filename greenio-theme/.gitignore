@@ -1,0 +1,7 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+
+# NOTE: vendor/ is intentionally COMMITTED so the theme works out-of-the-box
+# (Carbon Fields is bundled). Re-generate it any time with `composer install`.

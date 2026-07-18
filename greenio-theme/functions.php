@@ -158,41 +158,80 @@ function greenio_body_classes( $classes ) {
 add_filter( 'body_class', 'greenio_body_classes' );
 
 /* =========================================================================
- * ADVANCED CUSTOM FIELDS (ACF) INTEGRATION
+ * CARBON FIELDS INTEGRATION
  *
- * The theme works with OR without ACF installed:
- *  - If ACF is active, all content is editable from the WordPress backend.
- *  - If ACF is NOT active, the template helpers below fall back to sensible
- *    defaults so the site never breaks (see greenio_field() / greenio_image()).
+ * This theme uses the free, open-source Carbon Fields library
+ * (htmlburger/carbon-fields) — bundled inside the theme via Composer
+ * (see composer.json + vendor/). NO plugin is required.
  *
- * Install "Advanced Custom Fields" (free) or ACF PRO to unlock editing.
- * The Repeater field used for the services grid requires ACF PRO — a graceful
- * fallback is provided for the free version.
+ *  - Carbon Fields is loaded through the Composer autoloader and booted on
+ *    the `after_setup_theme` hook via Carbon_Fields\Carbon_Fields::boot().
+ *  - Containers/fields are defined on the `carbon_fields_register_fields`
+ *    action (fired from the `carbon_fields_boot` action).
+ *  - The template helpers below (greenio_field / greenio_image) wrap
+ *    carbon_get_post_meta() / carbon_get_theme_option() and fall back to
+ *    sensible defaults, so the site NEVER breaks even if Carbon Fields is
+ *    somehow unavailable or a field is empty.
  * ========================================================================= */
 
 /**
- * Is ACF available?
+ * Load the Composer autoloader and boot Carbon Fields.
+ *
+ * Booting on `after_setup_theme` is the officially recommended hook.
+ */
+function greenio_boot_carbon_fields() {
+	$autoload = get_template_directory() . '/vendor/autoload.php';
+	if ( file_exists( $autoload ) ) {
+		require_once $autoload;
+	}
+
+	if ( class_exists( '\Carbon_Fields\Carbon_Fields' ) ) {
+		\Carbon_Fields\Carbon_Fields::boot();
+	}
+}
+add_action( 'after_setup_theme', 'greenio_boot_carbon_fields' );
+
+/**
+ * Is Carbon Fields available (booted & helpers loaded)?
  *
  * @return bool
  */
-function greenio_acf() {
-	return function_exists( 'get_field' );
+function greenio_cf() {
+	return function_exists( 'carbon_get_post_meta' ) && function_exists( 'carbon_get_theme_option' );
 }
 
 /**
- * Safe field getter with a fallback value.
+ * Safe field getter with a graceful fallback value.
  *
- * Returns the ACF field when available & non-empty, otherwise $default.
+ * Reads a Carbon Fields value and returns it when non-empty, otherwise the
+ * supplied $default. The $scope argument mirrors the old ACF helper signature:
+ *   - 'option'  → carbon_get_theme_option() (global settings)
+ *   - false/int → carbon_get_post_meta( <post id>, ... ) (front-page meta)
  *
- * @param string $selector Field name.
+ * Carbon Fields prefixes stored meta keys with an underscore automatically,
+ * so field names are passed here WITHOUT the leading underscore.
+ *
+ * @param string $selector Field name (no leading underscore).
  * @param mixed  $default  Fallback value.
- * @param mixed  $post_id  Post ID or 'option'. Default current post.
+ * @param mixed  $scope    'option' for theme options, or a post ID / false for post meta.
  * @return mixed
  */
-function greenio_field( $selector, $default = '', $post_id = false ) {
-	if ( greenio_acf() ) {
-		$value = get_field( $selector, $post_id );
-		if ( ! empty( $value ) || '0' === $value || 0 === $value ) {
+function greenio_field( $selector, $default = '', $scope = false ) {
+	if ( greenio_cf() ) {
+		if ( 'option' === $scope ) {
+			$value = carbon_get_theme_option( $selector );
+		} else {
+			$post_id = $scope ? (int) $scope : get_the_ID();
+			$value   = $post_id ? carbon_get_post_meta( $post_id, $selector ) : '';
+		}
+
+		if ( is_array( $value ) ) {
+			if ( ! empty( $value ) ) {
+				return $value;
+			}
+		} elseif ( '' !== $value && null !== $value && false !== $value ) {
+			return $value;
+		} elseif ( '0' === (string) $value ) {
 			return $value;
 		}
 	}
@@ -202,37 +241,39 @@ function greenio_field( $selector, $default = '', $post_id = false ) {
 /**
  * Safe image getter.
  *
- * ACF image fields may return an ID, URL string, or array (depending on the
- * "Return Format"). This normalises any of those to a usable URL and falls
- * back to a bundled theme asset if empty.
+ * Carbon Fields image/media fields store an attachment ID by default
+ * (value_type "id") or a URL (value_type "url"). This normalises either to a
+ * usable URL and falls back to a bundled theme asset when empty.
  *
- * @param string $selector      Field name.
+ * @param string $selector       Field name.
  * @param string $fallback_asset Relative theme asset path used when empty.
- * @param string $size          Image size for array/ID formats.
- * @param mixed  $post_id       Post ID or 'option'.
+ * @param string $size           Image size for ID values.
+ * @param mixed  $scope          'option' or a post ID / false.
  * @return string URL.
  */
-function greenio_image( $selector, $fallback_asset, $size = 'large', $post_id = false ) {
-	$img = greenio_acf() ? get_field( $selector, $post_id ) : '';
+function greenio_image( $selector, $fallback_asset, $size = 'large', $scope = false ) {
+	$img = greenio_field( $selector, '', $scope );
 	return greenio_image_value( $img, $fallback_asset, $size );
 }
 
 /**
- * Normalise an already-fetched ACF image value to a usable URL.
+ * Normalise an already-fetched image value to a usable URL.
  *
- * Handy for repeater / sub-field image values (which come back as raw
- * ID / URL / array data, so greenio_image() — which calls get_field() —
- * cannot be used). Falls back to a bundled theme asset if empty; an empty
- * fallback returns '' (meaning "no image").
+ * Handles every shape a Carbon Fields media/image sub-field may return:
+ *   - attachment ID (int or numeric string)  → resolve via WP
+ *   - URL string                             → use as-is
+ *   - array with 'url' / 'sizes'             → defensive support
+ * Falls back to a bundled theme asset if empty; an empty fallback returns ''
+ * (meaning "no image", e.g. an optional logo).
  *
- * @param mixed  $img            Raw image value (array | ID | URL | '').
+ * @param mixed  $img            Raw image value (ID | URL | array | '').
  * @param string $fallback_asset Relative theme asset path used when empty.
- * @param string $size           Image size for array/ID formats.
+ * @param string $size           Image size for ID values.
  * @return string URL.
  */
 function greenio_image_value( $img, $fallback_asset, $size = 'large' ) {
 	if ( is_array( $img ) ) {
-		// Array return format.
+		// Defensive: array shape (e.g. ACF-style or complex value).
 		if ( ! empty( $img['sizes'][ $size ] ) ) {
 			return $img['sizes'][ $size ];
 		}
@@ -240,13 +281,15 @@ function greenio_image_value( $img, $fallback_asset, $size = 'large' ) {
 			return $img['url'];
 		}
 	} elseif ( is_numeric( $img ) ) {
-		// ID return format.
-		$src = wp_get_attachment_image_url( (int) $img, $size );
-		if ( $src ) {
-			return $src;
+		// Carbon Fields default: attachment ID.
+		if ( function_exists( 'wp_get_attachment_image_url' ) ) {
+			$src = wp_get_attachment_image_url( (int) $img, $size );
+			if ( $src ) {
+				return $src;
+			}
 		}
 	} elseif ( is_string( $img ) && '' !== $img ) {
-		// URL return format.
+		// URL value_type.
 		return $img;
 	}
 
@@ -259,663 +302,286 @@ function greenio_image_value( $img, $fallback_asset, $size = 'large' ) {
 }
 
 /**
- * Register an ACF Options page for global (header/footer) settings.
+ * Register all Carbon Fields containers & fields.
+ *
+ * Hooked to `carbon_fields_register_fields` (fired by Carbon_Fields::boot()).
+ * Two containers are created:
+ *   1. A Theme Options page  → global logo / header CTA / footer settings.
+ *   2. A Post Meta container → the static front page content, including three
+ *      `complex` fields (Carbon Fields' free repeater): services, stats_band
+ *      and projects.
  */
-function greenio_acf_options_page() {
-	if ( function_exists( 'acf_add_options_page' ) ) {
-		acf_add_options_page(
-			array(
-				'page_title' => __( 'Greenio Theme Settings', 'greenio' ),
-				'menu_title' => __( 'Theme Settings', 'greenio' ),
-				'menu_slug'  => 'greenio-settings',
-				'capability' => 'edit_theme_options',
-				'icon_url'   => 'dashicons-superhero',
-				'position'   => 59,
-				'redirect'   => false,
-			)
-		);
-	}
-}
-add_action( 'acf/init', 'greenio_acf_options_page' );
-
-/**
- * Register all ACF field groups programmatically.
- */
-function greenio_register_acf_fields() {
-	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+function greenio_register_carbon_fields() {
+	if ( ! class_exists( '\Carbon_Fields\Container' ) ) {
 		return;
 	}
 
-	/* --------------------------------------------------------------------
-	 * GROUP 1 — Front Page Content
-	 * Shows on the page set as the static front page (Settings → Reading).
-	 * ------------------------------------------------------------------ */
-	acf_add_local_field_group(
-		array(
-			'key'      => 'group_greenio_front',
-			'title'    => __( 'Greenio — Front Page Content', 'greenio' ),
-			'fields'   => array(
-
-				/* ---- HERO SECTION ---- */
-				array(
-					'key'     => 'field_hero_tab',
-					'label'   => __( 'Hero Section', 'greenio' ),
-					'type'    => 'tab',
-					'placement' => 'top',
-				),
-				array(
-					'key'          => 'field_hero_eyebrow',
-					'label'        => __( 'Hero Eyebrow', 'greenio' ),
-					'name'         => 'hero_eyebrow',
-					'type'         => 'text',
-					'default_value'=> 'Welcome to Greenio',
-				),
-				array(
-					'key'          => 'field_hero_title',
-					'label'        => __( 'Hero Title', 'greenio' ),
-					'name'         => 'hero_title',
-					'type'         => 'text',
-					'instructions' => __( 'Wrap the highlighted words in [g]...[/g] to apply the green→yellow gradient.', 'greenio' ),
-					'default_value'=> 'The better source of energy for the [g]better tomorrow[/g]',
-				),
-				array(
-					'key'          => 'field_hero_subtitle',
-					'label'        => __( 'Hero Subtitle', 'greenio' ),
-					'name'         => 'hero_subtitle',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'Help protect the environment by powering your home and business with 100% clean, renewable energy — engineered for the future.',
-				),
-				array(
-					'key'          => 'field_hero_cta_text',
-					'label'        => __( 'Primary CTA Text', 'greenio' ),
-					'name'         => 'hero_cta_text',
-					'type'         => 'text',
-					'default_value'=> 'Get Started',
-				),
-				array(
-					'key'          => 'field_hero_cta_link',
-					'label'        => __( 'Primary CTA Link', 'greenio' ),
-					'name'         => 'hero_cta_link',
-					'type'         => 'text',
-					'default_value'=> '#contact',
-				),
-				array(
-					'key'          => 'field_hero_cta2_text',
-					'label'        => __( 'Secondary CTA Text', 'greenio' ),
-					'name'         => 'hero_cta2_text',
-					'type'         => 'text',
-					'default_value'=> 'Discover more',
-				),
-				array(
-					'key'          => 'field_hero_cta2_link',
-					'label'        => __( 'Secondary CTA Link', 'greenio' ),
-					'name'         => 'hero_cta2_link',
-					'type'         => 'text',
-					'default_value'=> '#services',
-				),
-				array(
-					'key'           => 'field_hero_bg',
-					'label'         => __( 'Hero Background Image', 'greenio' ),
-					'name'          => 'hero_bg',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-
-				/* ---- STATS CARD ---- */
-				array(
-					'key'   => 'field_stats_tab',
-					'label' => __( 'Stats Card', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_stat_label',
-					'label'        => __( 'Stat Subtext (top)', 'greenio' ),
-					'name'         => 'stat_label',
-					'type'         => 'text',
-					'default_value'=> 'Since 2010, our customers have avoided',
-				),
-				array(
-					'key'          => 'field_stat_number',
-					'label'        => __( 'Big Number', 'greenio' ),
-					'name'         => 'stat_number',
-					'type'         => 'number',
-					'instructions' => __( 'Digits only — the front-end animates a live count-up to this value.', 'greenio' ),
-					'default_value'=> 112845311,
-				),
-				array(
-					'key'          => 'field_stat_unit',
-					'label'        => __( 'Unit / Subtext (bottom)', 'greenio' ),
-					'name'         => 'stat_unit',
-					'type'         => 'text',
-					'default_value'=> 'pounds of CO₂',
-				),
-
-				/* ---- SERVICES GRID (ACF PRO Repeater) ---- */
-				array(
-					'key'   => 'field_services_tab',
-					'label' => __( 'Services Grid', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_services_repeater',
-					'label'        => __( 'Service Cards', 'greenio' ),
-					'name'         => 'services',
-					'type'         => 'repeater',
-					'instructions' => __( 'The icon cards shown under the hero. Leave empty to fall back to the built-in defaults.', 'greenio' ),
-					'min'          => 0,
-					'max'          => 8,
-					'layout'       => 'block',
-					'button_label' => __( 'Add Service', 'greenio' ),
-					'sub_fields'   => array(
-						array(
-							'key'           => 'field_service_icon',
-							'label'         => __( 'Icon', 'greenio' ),
-							'name'          => 'icon',
-							'type'          => 'image',
-							'return_format' => 'url',
-							'preview_size'  => 'thumbnail',
-							'instructions'  => __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ),
-							'wrapper'       => array( 'width' => '25' ),
-						),
-						array(
-							'key'     => 'field_service_title',
-							'label'   => __( 'Title', 'greenio' ),
-							'name'    => 'title',
-							'type'    => 'text',
-							'wrapper' => array( 'width' => '45' ),
-						),
-						array(
-							'key'     => 'field_service_link',
-							'label'   => __( 'Link', 'greenio' ),
-							'name'    => 'link',
-							'type'    => 'text',
-							'default_value' => '#services',
-							'wrapper' => array( 'width' => '30' ),
-						),
-						array(
-							'key'   => 'field_service_desc',
-							'label' => __( 'Description', 'greenio' ),
-							'name'  => 'description',
-							'type'  => 'textarea',
-							'rows'  => 3,
-						),
-						array(
-							'key'           => 'field_service_featured',
-							'label'         => __( 'Highlight (blue) card?', 'greenio' ),
-							'name'          => 'featured',
-							'type'          => 'true_false',
-							'ui'            => 1,
-							'default_value' => 0,
-						),
-					),
-				),
-
-				/* ---- ABOUT / ZIG-ZAG ---- */
-				array(
-					'key'   => 'field_about_tab',
-					'label' => __( 'About / Zig-Zag', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_about_eyebrow',
-					'label'        => __( 'About Eyebrow', 'greenio' ),
-					'name'         => 'about_eyebrow',
-					'type'         => 'text',
-					'default_value'=> 'Who we are',
-				),
-				array(
-					'key'          => 'field_about_title',
-					'label'        => __( 'About Title', 'greenio' ),
-					'name'         => 'about_title',
-					'type'         => 'text',
-					'default_value'=> 'Keep your environment clean, make the earth green.',
-				),
-				array(
-					'key'          => 'field_about_desc',
-					'label'        => __( 'About Description', 'greenio' ),
-					'name'         => 'about_desc',
-					'type'         => 'textarea',
-					'rows'         => 4,
-					'default_value'=> 'For over a decade Greenio has designed, built and maintained renewable systems that pay for themselves — while cutting millions of pounds of carbon from the atmosphere.',
-				),
-				array(
-					'key'          => 'field_about_bullets',
-					'label'        => __( 'Checklist Items', 'greenio' ),
-					'name'         => 'about_bullets',
-					'type'         => 'textarea',
-					'instructions' => __( 'One item per line.', 'greenio' ),
-					'rows'         => 4,
-					'default_value'=> "Certified engineers & 25-year performance warranty\nReal-time energy dashboards on every install\nZero-emission supply from source to socket",
-				),
-				array(
-					'key'           => 'field_about_image',
-					'label'         => __( 'About Image', 'greenio' ),
-					'name'          => 'about_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-				array(
-					'key'          => 'field_about_overlay_tag',
-					'label'        => __( 'Overlay Card Tag', 'greenio' ),
-					'name'         => 'about_overlay_tag',
-					'type'         => 'text',
-					'default_value'=> 'Renewable energy',
-				),
-				array(
-					'key'          => 'field_about_overlay_title',
-					'label'        => __( 'Overlay Card Title', 'greenio' ),
-					'name'         => 'about_overlay_title',
-					'type'         => 'text',
-					'default_value'=> 'Energy is the future, make it brilliant.',
-				),
-
-				/* ---- ENERGY GRID (What we offer) ---- */
-				array(
-					'key'   => 'field_energy_tab',
-					'label' => __( 'Energy Grid', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_energy_eyebrow',
-					'label'        => __( 'Section Eyebrow', 'greenio' ),
-					'name'         => 'energy_eyebrow',
-					'type'         => 'text',
-					'default_value'=> 'What we offer',
-				),
-				array(
-					'key'          => 'field_energy_title',
-					'label'        => __( 'Section Title', 'greenio' ),
-					'name'         => 'energy_title',
-					'type'         => 'text',
-					'default_value'=> "A choice that's good for you and the planet.",
-				),
-				array(
-					'key'          => 'field_energy_subtitle',
-					'label'        => __( 'Section Subtitle', 'greenio' ),
-					'name'         => 'energy_subtitle',
-					'type'         => 'textarea',
-					'rows'         => 2,
-					'default_value'=> 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.',
-				),
-
-				// -- Card 1: Wind --
-				array(
-					'key'          => 'field_energy_1_tag',
-					'label'        => __( 'Card 1 — Tag', 'greenio' ),
-					'name'         => 'energy_1_tag',
-					'type'         => 'text',
-					'default_value'=> 'Wind',
-				),
-				array(
-					'key'          => 'field_energy_1_title',
-					'label'        => __( 'Card 1 — Title', 'greenio' ),
-					'name'         => 'energy_1_title',
-					'type'         => 'text',
-					'default_value'=> 'Wind Power',
-				),
-				array(
-					'key'          => 'field_energy_1_desc',
-					'label'        => __( 'Card 1 — Description', 'greenio' ),
-					'name'         => 'energy_1_desc',
-					'type'         => 'textarea',
-					'rows'         => 2,
-					'default_value'=> 'Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.',
-				),
-				array(
-					'key'           => 'field_energy_1_image',
-					'label'         => __( 'Card 1 — Background Image', 'greenio' ),
-					'name'          => 'energy_1_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-
-				// -- Card 2: Water --
-				array(
-					'key'          => 'field_energy_2_tag',
-					'label'        => __( 'Card 2 — Tag', 'greenio' ),
-					'name'         => 'energy_2_tag',
-					'type'         => 'text',
-					'default_value'=> 'Water',
-				),
-				array(
-					'key'          => 'field_energy_2_title',
-					'label'        => __( 'Card 2 — Title', 'greenio' ),
-					'name'         => 'energy_2_title',
-					'type'         => 'text',
-					'default_value'=> 'Hydroelectric',
-				),
-				array(
-					'key'          => 'field_energy_2_desc',
-					'label'        => __( 'Card 2 — Description', 'greenio' ),
-					'name'         => 'energy_2_desc',
-					'type'         => 'textarea',
-					'rows'         => 2,
-					'default_value'=> 'Modern hydro plants deliver clean, dependable baseload power from the flow of water.',
-				),
-				array(
-					'key'           => 'field_energy_2_image',
-					'label'         => __( 'Card 2 — Background Image', 'greenio' ),
-					'name'          => 'energy_2_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-
-				// -- Card 3: Solar --
-				array(
-					'key'          => 'field_energy_3_tag',
-					'label'        => __( 'Card 3 — Tag', 'greenio' ),
-					'name'         => 'energy_3_tag',
-					'type'         => 'text',
-					'default_value'=> 'Solar',
-				),
-				array(
-					'key'          => 'field_energy_3_title',
-					'label'        => __( 'Card 3 — Title', 'greenio' ),
-					'name'         => 'energy_3_title',
-					'type'         => 'text',
-					'default_value'=> 'Solar Power',
-				),
-				array(
-					'key'          => 'field_energy_3_desc',
-					'label'        => __( 'Card 3 — Description', 'greenio' ),
-					'name'         => 'energy_3_desc',
-					'type'         => 'textarea',
-					'rows'         => 2,
-					'default_value'=> 'High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.',
-				),
-				array(
-					'key'           => 'field_energy_3_image',
-					'label'         => __( 'Card 3 — Background Image', 'greenio' ),
-					'name'          => 'energy_3_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-
-				// -- Card 4: Storage --
-				array(
-					'key'          => 'field_energy_4_tag',
-					'label'        => __( 'Card 4 — Tag', 'greenio' ),
-					'name'         => 'energy_4_tag',
-					'type'         => 'text',
-					'default_value'=> 'Storage',
-				),
-				array(
-					'key'          => 'field_energy_4_title',
-					'label'        => __( 'Card 4 — Title', 'greenio' ),
-					'name'         => 'energy_4_title',
-					'type'         => 'text',
-					'default_value'=> 'Smart Battery Storage',
-				),
-				array(
-					'key'          => 'field_energy_4_desc',
-					'label'        => __( 'Card 4 — Description', 'greenio' ),
-					'name'         => 'energy_4_desc',
-					'type'         => 'textarea',
-					'rows'         => 2,
-					'default_value'=> 'Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.',
-				),
-				array(
-					'key'           => 'field_energy_4_image',
-					'label'         => __( 'Card 4 — Background Image', 'greenio' ),
-					'name'          => 'energy_4_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'medium',
-				),
-
-				/* ---- STATS BAND (ACF PRO Repeater) ---- */
-				array(
-					'key'   => 'field_band_tab',
-					'label' => __( 'Stats Band', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_stats_band_repeater',
-					'label'        => __( 'Stat Items', 'greenio' ),
-					'name'         => 'stats_band',
-					'type'         => 'repeater',
-					'instructions' => __( 'The numbers strip. Leave empty to fall back to the built-in defaults.', 'greenio' ),
-					'min'          => 0,
-					'max'          => 8,
-					'layout'       => 'table',
-					'button_label' => __( 'Add Stat', 'greenio' ),
-					'sub_fields'   => array(
-						array(
-							'key'           => 'field_stat_number',
-							'label'         => __( 'Number', 'greenio' ),
-							'name'          => 'number',
-							'type'          => 'number',
-							'instructions'  => __( 'Digits only — the front-end animates a count-up to this value.', 'greenio' ),
-							'wrapper'       => array( 'width' => '30' ),
-						),
-						array(
-							'key'          => 'field_stat_suffix',
-							'label'        => __( 'Suffix', 'greenio' ),
-							'name'         => 'suffix',
-							'type'         => 'text',
-							'instructions' => __( 'e.g. +, %, k+, yrs', 'greenio' ),
-							'wrapper'      => array( 'width' => '20' ),
-						),
-						array(
-							'key'     => 'field_stat_label',
-							'label'   => __( 'Label', 'greenio' ),
-							'name'    => 'label',
-							'type'    => 'text',
-							'wrapper' => array( 'width' => '50' ),
-						),
-					),
-				),
-
-				/* ---- PROJECTS (Featured work) ---- */
-				array(
-					'key'   => 'field_projects_tab',
-					'label' => __( 'Projects', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_projects_eyebrow',
-					'label'        => __( 'Section Eyebrow', 'greenio' ),
-					'name'         => 'projects_eyebrow',
-					'type'         => 'text',
-					'default_value'=> 'Featured work',
-				),
-				array(
-					'key'          => 'field_projects_title',
-					'label'        => __( 'Section Title', 'greenio' ),
-					'name'         => 'projects_title',
-					'type'         => 'text',
-					'default_value'=> 'Powering communities, one project at a time.',
-				),
-				array(
-					'key'          => 'field_projects_repeater',
-					'label'        => __( 'Project Cards', 'greenio' ),
-					'name'         => 'projects',
-					'type'         => 'repeater',
-					'instructions' => __( 'The featured project cards. Leave empty to fall back to the built-in defaults.', 'greenio' ),
-					'min'          => 0,
-					'max'          => 12,
-					'layout'       => 'block',
-					'button_label' => __( 'Add Project', 'greenio' ),
-					'sub_fields'   => array(
-						array(
-							'key'     => 'field_project_tag',
-							'label'   => __( 'Tag', 'greenio' ),
-							'name'    => 'tag',
-							'type'    => 'text',
-							'wrapper' => array( 'width' => '30' ),
-						),
-						array(
-							'key'     => 'field_project_title',
-							'label'   => __( 'Title', 'greenio' ),
-							'name'    => 'title',
-							'type'    => 'text',
-							'wrapper' => array( 'width' => '70' ),
-						),
-						array(
-							'key'           => 'field_project_image',
-							'label'         => __( 'Image', 'greenio' ),
-							'name'          => 'image',
-							'type'          => 'image',
-							'return_format' => 'url',
-							'preview_size'  => 'medium',
-						),
-					),
-				),
-
-				/* ---- CTA (Ready to switch?) ---- */
-				array(
-					'key'   => 'field_cta_tab',
-					'label' => __( 'CTA Section', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_cta_eyebrow',
-					'label'        => __( 'Eyebrow Text', 'greenio' ),
-					'name'         => 'cta_eyebrow',
-					'type'         => 'text',
-					'default_value'=> 'Ready to switch?',
-				),
-				array(
-					'key'          => 'field_cta_title',
-					'label'        => __( 'Main Title', 'greenio' ),
-					'name'         => 'cta_title',
-					'type'         => 'text',
-					'default_value'=> 'Start powering your world with clean energy today.',
-				),
-				array(
-					'key'          => 'field_cta_placeholder',
-					'label'        => __( 'Email Input Placeholder', 'greenio' ),
-					'name'         => 'cta_placeholder',
-					'type'         => 'text',
-					'default_value'=> 'Enter your email address',
-				),
-			),
-			'location' => array(
-				array(
-					array(
-						'param'    => 'page_type',
-						'operator' => '==',
-						'value'    => 'front_page',
-					),
-				),
-			),
-			'menu_order'            => 0,
-			'position'              => 'normal',
-			'style'                 => 'default',
-			'label_placement'       => 'top',
-			'hide_on_screen'        => array( 'the_content' ),
-			'active'                => true,
-			'description'           => __( 'Editable content for the Greenio front page.', 'greenio' ),
-		)
-	);
+	$container = '\Carbon_Fields\Container';
+	$field     = '\Carbon_Fields\Field';
 
 	/* --------------------------------------------------------------------
-	 * GROUP 2 — Global Settings (Options page): logo + header CTA + footer
+	 * CONTAINER 1 — Theme Options page (global settings)
 	 * ------------------------------------------------------------------ */
-	acf_add_local_field_group(
-		array(
-			'key'    => 'group_greenio_options',
-			'title'  => __( 'Greenio — Global Settings', 'greenio' ),
-			'fields' => array(
-				array(
-					'key'   => 'field_opt_header_tab',
-					'label' => __( 'Logo & Header', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_opt_logo_text',
-					'label'        => __( 'Logo Text', 'greenio' ),
-					'name'         => 'logo_text',
-					'type'         => 'text',
-					'instructions' => __( 'Used when no logo image is set. Wrap the accent part in [g]...[/g] (e.g. Green[g]io[/g]).', 'greenio' ),
-					'default_value'=> 'Green[g]io[/g]',
-				),
-				array(
-					'key'           => 'field_opt_logo_image',
-					'label'         => __( 'Logo Image', 'greenio' ),
-					'name'          => 'logo_image',
-					'type'          => 'image',
-					'return_format' => 'url',
-					'preview_size'  => 'thumbnail',
-					'instructions'  => __( 'Optional. Overrides the text logo when set.', 'greenio' ),
-				),
-				array(
-					'key'          => 'field_opt_header_cta_text',
-					'label'        => __( 'Header CTA Text', 'greenio' ),
-					'name'         => 'header_cta_text',
-					'type'         => 'text',
-					'default_value'=> 'Get Started',
-				),
-				array(
-					'key'          => 'field_opt_header_cta_link',
-					'label'        => __( 'Header CTA Link', 'greenio' ),
-					'name'         => 'header_cta_link',
-					'type'         => 'text',
-					'default_value'=> '#contact',
-				),
-				array(
-					'key'   => 'field_opt_footer_tab',
-					'label' => __( 'Footer', 'greenio' ),
-					'type'  => 'tab',
-				),
-				array(
-					'key'          => 'field_opt_footer_about',
-					'label'        => __( 'Footer About Text', 'greenio' ),
-					'name'         => 'footer_about',
-					'type'         => 'textarea',
-					'rows'         => 3,
-					'default_value'=> 'The better source of energy for the better tomorrow. 100% clean. 100% future-ready.',
-				),
-				array(
-					'key'          => 'field_opt_footer_email',
-					'label'        => __( 'Contact Email', 'greenio' ),
-					'name'         => 'footer_email',
-					'type'         => 'text',
-					'default_value'=> 'hello@greenio.energy',
-				),
-				array(
-					'key'          => 'field_opt_footer_phone',
-					'label'        => __( 'Contact Phone', 'greenio' ),
-					'name'         => 'footer_phone',
-					'type'         => 'text',
-					'default_value'=> '+1 (800) 555-0199',
-				),
-				array(
-					'key'          => 'field_opt_footer_address',
-					'label'        => __( 'Address', 'greenio' ),
-					'name'         => 'footer_address',
-					'type'         => 'text',
-					'default_value'=> '123 Clean Energy Blvd',
-				),
-				array(
-					'key'          => 'field_opt_footer_copyright',
-					'label'        => __( 'Copyright Note', 'greenio' ),
-					'name'         => 'footer_copyright',
-					'type'         => 'text',
-					'default_value'=> 'Crafted for a sustainable world.',
-				),
-			),
-			'location' => array(
-				array(
-					array(
-						'param'    => 'options_page',
-						'operator' => '==',
-						'value'    => 'greenio-settings',
-					),
-				),
-			),
-			'active'      => true,
-			'description' => __( 'Global header & footer settings for the Greenio theme.', 'greenio' ),
+	call_user_func( array( $container, 'make' ), 'theme_options', 'greenio-settings', __( 'Greenio Theme Settings', 'greenio' ) )
+		->set_page_menu_title( __( 'Theme Settings', 'greenio' ) )
+		->set_icon( 'dashicons-superhero' )
+		->set_page_menu_position( 59 )
+		->add_tab(
+			__( 'Logo & Header', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'logo_text', __( 'Logo Text', 'greenio' ) )
+					->set_help_text( __( 'Used when no logo image is set. Wrap the accent part in [g]...[/g] (e.g. Green[g]io[/g]).', 'greenio' ) )
+					->set_default_value( 'Green[g]io[/g]' ),
+				call_user_func( array( $field, 'make' ), 'image', 'logo_image', __( 'Logo Image', 'greenio' ) )
+					->set_value_type( 'url' )
+					->set_help_text( __( 'Optional. Overrides the text logo when set.', 'greenio' ) ),
+				call_user_func( array( $field, 'make' ), 'text', 'header_cta_text', __( 'Header CTA Text', 'greenio' ) )
+					->set_default_value( 'Get Started' ),
+				call_user_func( array( $field, 'make' ), 'text', 'header_cta_link', __( 'Header CTA Link', 'greenio' ) )
+					->set_default_value( '#contact' ),
+			)
 		)
-	);
+		->add_tab(
+			__( 'Footer', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'textarea', 'footer_about', __( 'Footer About Text', 'greenio' ) )
+					->set_rows( 3 )
+					->set_default_value( 'The better source of energy for the better tomorrow. 100% clean. 100% future-ready.' ),
+				call_user_func( array( $field, 'make' ), 'text', 'footer_email', __( 'Contact Email', 'greenio' ) )
+					->set_default_value( 'hello@greenio.energy' ),
+				call_user_func( array( $field, 'make' ), 'text', 'footer_phone', __( 'Contact Phone', 'greenio' ) )
+					->set_default_value( '+1 (800) 555-0199' ),
+				call_user_func( array( $field, 'make' ), 'text', 'footer_address', __( 'Address', 'greenio' ) )
+					->set_default_value( '123 Clean Energy Blvd' ),
+				call_user_func( array( $field, 'make' ), 'text', 'footer_copyright', __( 'Copyright Note', 'greenio' ) )
+					->set_help_text( __( 'Use {year} to insert the current year automatically.', 'greenio' ) )
+					->set_default_value( 'Crafted for a sustainable world.' ),
+			)
+		);
+
+	/* --------------------------------------------------------------------
+	 * CONTAINER 2 — Front Page content (Post Meta)
+	 *
+	 * Carbon Fields has no native "is front page" condition, so we target the
+	 * page selected under Settings → Reading (page_on_front) by its post ID.
+	 * If no static front page is configured yet, we gracefully fall back to
+	 * showing the fields on any Page, so the container is never empty.
+	 * ------------------------------------------------------------------ */
+	$front_page_id = (int) get_option( 'page_on_front' );
+
+	$front_container = call_user_func( array( $container, 'make' ), 'post_meta', 'greenio_front', __( 'Greenio — Front Page Content', 'greenio' ) );
+
+	if ( $front_page_id > 0 ) {
+		$front_container->where( 'post_id', '=', $front_page_id );
+	} else {
+		$front_container->where( 'post_type', '=', 'page' );
+	}
+
+	$front_container
+		->add_tab(
+			__( 'Hero Section', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'hero_eyebrow', __( 'Hero Eyebrow', 'greenio' ) )
+					->set_default_value( 'Welcome to Greenio' ),
+				call_user_func( array( $field, 'make' ), 'text', 'hero_title', __( 'Hero Title', 'greenio' ) )
+					->set_help_text( __( 'Wrap the highlighted words in [g]...[/g] to apply the green→yellow gradient.', 'greenio' ) )
+					->set_default_value( 'The better source of energy for the [g]better tomorrow[/g]' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'hero_subtitle', __( 'Hero Subtitle', 'greenio' ) )
+					->set_rows( 3 )
+					->set_default_value( 'Help protect the environment by powering your home and business with 100% clean, renewable energy — engineered for the future.' ),
+				call_user_func( array( $field, 'make' ), 'text', 'hero_cta_text', __( 'Primary CTA Text', 'greenio' ) )
+					->set_default_value( 'Get Started' ),
+				call_user_func( array( $field, 'make' ), 'text', 'hero_cta_link', __( 'Primary CTA Link', 'greenio' ) )
+					->set_default_value( '#contact' ),
+				call_user_func( array( $field, 'make' ), 'text', 'hero_cta2_text', __( 'Secondary CTA Text', 'greenio' ) )
+					->set_default_value( 'Discover more' ),
+				call_user_func( array( $field, 'make' ), 'text', 'hero_cta2_link', __( 'Secondary CTA Link', 'greenio' ) )
+					->set_default_value( '#services' ),
+				call_user_func( array( $field, 'make' ), 'image', 'hero_bg', __( 'Hero Background Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+			)
+		)
+		->add_tab(
+			__( 'Stats Card', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'stat_label', __( 'Stat Subtext (top)', 'greenio' ) )
+					->set_default_value( 'Since 2010, our customers have avoided' ),
+				call_user_func( array( $field, 'make' ), 'text', 'stat_number', __( 'Big Number', 'greenio' ) )
+					->set_attribute( 'type', 'number' )
+					->set_help_text( __( 'Digits only — the front-end animates a live count-up to this value.', 'greenio' ) )
+					->set_default_value( '112845311' ),
+				call_user_func( array( $field, 'make' ), 'text', 'stat_unit', __( 'Unit / Subtext (bottom)', 'greenio' ) )
+					->set_default_value( 'pounds of CO₂' ),
+			)
+		)
+		->add_tab(
+			__( 'Services Grid', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'complex', 'services', __( 'Service Cards', 'greenio' ) )
+					->set_help_text( __( 'The icon cards shown under the hero. Leave empty to fall back to the built-in defaults.', 'greenio' ) )
+					->set_layout( 'tabbed-vertical' )
+					->setup_labels(
+						array(
+							'plural_name'   => __( 'Services', 'greenio' ),
+							'singular_name' => __( 'Service', 'greenio' ),
+						)
+					)
+					->add_fields(
+						array(
+							call_user_func( array( $field, 'make' ), 'text', 'title', __( 'Title', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'textarea', 'description', __( 'Description', 'greenio' ) )
+								->set_rows( 3 ),
+							call_user_func( array( $field, 'make' ), 'text', 'link', __( 'Link', 'greenio' ) )
+								->set_default_value( '#services' ),
+							call_user_func( array( $field, 'make' ), 'image', 'icon', __( 'Icon', 'greenio' ) )
+								->set_value_type( 'url' )
+								->set_help_text( __( 'Optional. Leave empty to use the built-in SVG icon.', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'checkbox', 'featured', __( 'Highlight (blue) card?', 'greenio' ) )
+								->set_option_value( 'yes' ),
+						)
+					),
+			)
+		)
+		->add_tab(
+			__( 'About / Zig-Zag', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'about_eyebrow', __( 'About Eyebrow', 'greenio' ) )
+					->set_default_value( 'Who we are' ),
+				call_user_func( array( $field, 'make' ), 'text', 'about_title', __( 'About Title', 'greenio' ) )
+					->set_default_value( 'Keep your environment clean, make the earth green.' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'about_desc', __( 'About Description', 'greenio' ) )
+					->set_rows( 4 )
+					->set_default_value( 'For over a decade Greenio has designed, built and maintained renewable systems that pay for themselves — while cutting millions of pounds of carbon from the atmosphere.' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'about_bullets', __( 'Checklist Items', 'greenio' ) )
+					->set_rows( 4 )
+					->set_help_text( __( 'One item per line.', 'greenio' ) )
+					->set_default_value( "Certified engineers & 25-year performance warranty\nReal-time energy dashboards on every install\nZero-emission supply from source to socket" ),
+				call_user_func( array( $field, 'make' ), 'image', 'about_image', __( 'About Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+				call_user_func( array( $field, 'make' ), 'text', 'about_overlay_tag', __( 'Overlay Card Tag', 'greenio' ) )
+					->set_default_value( 'Renewable energy' ),
+				call_user_func( array( $field, 'make' ), 'text', 'about_overlay_title', __( 'Overlay Card Title', 'greenio' ) )
+					->set_default_value( 'Energy is the future, make it brilliant.' ),
+			)
+		)
+		->add_tab(
+			__( 'Energy Grid', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'energy_eyebrow', __( 'Section Eyebrow', 'greenio' ) )
+					->set_default_value( 'What we offer' ),
+				call_user_func( array( $field, 'make' ), 'text', 'energy_title', __( 'Section Title', 'greenio' ) )
+					->set_default_value( "A choice that's good for you and the planet." ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'energy_subtitle', __( 'Section Subtitle', 'greenio' ) )
+					->set_rows( 2 )
+					->set_default_value( 'From flowing rivers to open fields, Greenio harnesses every source of clean power with technology built for a sustainable world.' ),
+
+				// Card 1: Wind.
+				call_user_func( array( $field, 'make' ), 'text', 'energy_1_tag', __( 'Card 1 — Tag', 'greenio' ) )
+					->set_default_value( 'Wind' ),
+				call_user_func( array( $field, 'make' ), 'text', 'energy_1_title', __( 'Card 1 — Title', 'greenio' ) )
+					->set_default_value( 'Wind Power' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'energy_1_desc', __( 'Card 1 — Description', 'greenio' ) )
+					->set_rows( 2 )
+					->set_default_value( 'Next-generation turbines convert steady coastal winds into round-the-clock renewable electricity.' ),
+				call_user_func( array( $field, 'make' ), 'image', 'energy_1_image', __( 'Card 1 — Background Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+
+				// Card 2: Water.
+				call_user_func( array( $field, 'make' ), 'text', 'energy_2_tag', __( 'Card 2 — Tag', 'greenio' ) )
+					->set_default_value( 'Water' ),
+				call_user_func( array( $field, 'make' ), 'text', 'energy_2_title', __( 'Card 2 — Title', 'greenio' ) )
+					->set_default_value( 'Hydroelectric' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'energy_2_desc', __( 'Card 2 — Description', 'greenio' ) )
+					->set_rows( 2 )
+					->set_default_value( 'Modern hydro plants deliver clean, dependable baseload power from the flow of water.' ),
+				call_user_func( array( $field, 'make' ), 'image', 'energy_2_image', __( 'Card 2 — Background Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+
+				// Card 3: Solar.
+				call_user_func( array( $field, 'make' ), 'text', 'energy_3_tag', __( 'Card 3 — Tag', 'greenio' ) )
+					->set_default_value( 'Solar' ),
+				call_user_func( array( $field, 'make' ), 'text', 'energy_3_title', __( 'Card 3 — Title', 'greenio' ) )
+					->set_default_value( 'Solar Power' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'energy_3_desc', __( 'Card 3 — Description', 'greenio' ) )
+					->set_rows( 2 )
+					->set_default_value( 'High-efficiency photovoltaic arrays capture the sun across fields, rooftops and farms.' ),
+				call_user_func( array( $field, 'make' ), 'image', 'energy_3_image', __( 'Card 3 — Background Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+
+				// Card 4: Storage.
+				call_user_func( array( $field, 'make' ), 'text', 'energy_4_tag', __( 'Card 4 — Tag', 'greenio' ) )
+					->set_default_value( 'Storage' ),
+				call_user_func( array( $field, 'make' ), 'text', 'energy_4_title', __( 'Card 4 — Title', 'greenio' ) )
+					->set_default_value( 'Smart Battery Storage' ),
+				call_user_func( array( $field, 'make' ), 'textarea', 'energy_4_desc', __( 'Card 4 — Description', 'greenio' ) )
+					->set_rows( 2 )
+					->set_default_value( 'Grid-scale storage banks bottle the sun and wind for a stable, always-on clean supply.' ),
+				call_user_func( array( $field, 'make' ), 'image', 'energy_4_image', __( 'Card 4 — Background Image', 'greenio' ) )
+					->set_value_type( 'url' ),
+			)
+		)
+		->add_tab(
+			__( 'Stats Band', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'complex', 'stats_band', __( 'Stat Items', 'greenio' ) )
+					->set_help_text( __( 'The numbers strip. Leave empty to fall back to the built-in defaults.', 'greenio' ) )
+					->setup_labels(
+						array(
+							'plural_name'   => __( 'Stats', 'greenio' ),
+							'singular_name' => __( 'Stat', 'greenio' ),
+						)
+					)
+					->add_fields(
+						array(
+							call_user_func( array( $field, 'make' ), 'text', 'number', __( 'Number', 'greenio' ) )
+								->set_attribute( 'type', 'number' )
+								->set_help_text( __( 'Digits only — the front-end animates a count-up to this value.', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'text', 'suffix', __( 'Suffix', 'greenio' ) )
+								->set_help_text( __( 'e.g. +, %, k+, yrs', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'text', 'label', __( 'Label', 'greenio' ) ),
+						)
+					),
+			)
+		)
+		->add_tab(
+			__( 'Projects', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'projects_eyebrow', __( 'Section Eyebrow', 'greenio' ) )
+					->set_default_value( 'Featured work' ),
+				call_user_func( array( $field, 'make' ), 'text', 'projects_title', __( 'Section Title', 'greenio' ) )
+					->set_default_value( 'Powering communities, one project at a time.' ),
+				call_user_func( array( $field, 'make' ), 'complex', 'projects', __( 'Project Cards', 'greenio' ) )
+					->set_help_text( __( 'The featured project cards. Leave empty to fall back to the built-in defaults.', 'greenio' ) )
+					->set_layout( 'tabbed-vertical' )
+					->setup_labels(
+						array(
+							'plural_name'   => __( 'Projects', 'greenio' ),
+							'singular_name' => __( 'Project', 'greenio' ),
+						)
+					)
+					->add_fields(
+						array(
+							call_user_func( array( $field, 'make' ), 'text', 'tag', __( 'Tag', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'text', 'title', __( 'Title', 'greenio' ) ),
+							call_user_func( array( $field, 'make' ), 'image', 'image', __( 'Image', 'greenio' ) )
+								->set_value_type( 'url' ),
+						)
+					),
+			)
+		)
+		->add_tab(
+			__( 'CTA Section', 'greenio' ),
+			array(
+				call_user_func( array( $field, 'make' ), 'text', 'cta_eyebrow', __( 'Eyebrow Text', 'greenio' ) )
+					->set_default_value( 'Ready to switch?' ),
+				call_user_func( array( $field, 'make' ), 'text', 'cta_title', __( 'Main Title', 'greenio' ) )
+					->set_default_value( 'Start powering your world with clean energy today.' ),
+				call_user_func( array( $field, 'make' ), 'text', 'cta_placeholder', __( 'Email Input Placeholder', 'greenio' ) )
+					->set_default_value( 'Enter your email address' ),
+			)
+		);
 }
-add_action( 'acf/init', 'greenio_register_acf_fields' );
+add_action( 'carbon_fields_register_fields', 'greenio_register_carbon_fields' );
 
 /**
  * Helper: apply the [g]...[/g] gradient shortcode to a string and escape it.
@@ -938,9 +604,9 @@ function greenio_gradient_text( $text ) {
  *
  * Preserves the original two-tone "Green<span>io</span>" styling for the
  * default value, honours the [g]...[/g] gradient shortcode, and safely
- * escapes any custom logo text set from the ACF Options page.
+ * escapes any custom logo text set from the Theme Options page.
  *
- * @param string $text Logo text (from ACF option, with fallback).
+ * @param string $text Logo text (from theme option, with fallback).
  * @return string Safe HTML wrapped in <span class="logo-text">.
  */
 function greenio_logo_text_markup( $text ) {
@@ -961,14 +627,16 @@ function greenio_logo_text_markup( $text ) {
 }
 
 /**
- * Admin notice nudging the user to install ACF (dismissible, non-fatal).
+ * Admin notice shown only if the bundled Carbon Fields library is missing
+ * (e.g. the theme was installed without running `composer install`).
+ * Dismissible and non-fatal — the theme still renders its default content.
  */
-function greenio_acf_admin_notice() {
-	if ( greenio_acf() || ! current_user_can( 'install_plugins' ) ) {
+function greenio_carbon_admin_notice() {
+	if ( greenio_cf() || ! current_user_can( 'install_plugins' ) ) {
 		return;
 	}
-	echo '<div class="notice notice-info is-dismissible"><p><strong>Greenio:</strong> ';
-	echo esc_html__( 'Install & activate the free "Advanced Custom Fields" plugin to edit all front-page content from the dashboard. The theme works fine without it using default content.', 'greenio' );
+	echo '<div class="notice notice-warning is-dismissible"><p><strong>Greenio:</strong> ';
+	echo esc_html__( 'The bundled Carbon Fields library could not be loaded. Run "composer install" inside the theme directory to enable dashboard editing. The theme still works using its built-in default content.', 'greenio' );
 	echo '</p></div>';
 }
-add_action( 'admin_notices', 'greenio_acf_admin_notice' );
+add_action( 'admin_notices', 'greenio_carbon_admin_notice' );
