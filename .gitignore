@@ -1,0 +1,9 @@
+server.log
+*.pid
+.DS_Store
+node_modules/
+greenio-preview.html
+preview/
+
+# Screenshot tooling raw output (regenerable via shoot.js / render-mockups.js)
+screenshots/

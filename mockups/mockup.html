@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root{
+    --blue:#123c8c; --blue-deep:#0d2f6e; --blue-ink:#0a2454;
+    --green:#37b34a; --green-light:#7ed957; --yellow:#ffd21f;
+    --ff-head:'Plus Jakarta Sans',system-ui,sans-serif;
+    --ff-body:'Manrope',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--ff-body)}
+
+  /* ===== shared stage ===== */
+  .stage{position:relative;overflow:hidden}
+  .bg-grad{position:absolute;inset:0;background:
+     radial-gradient(1200px 800px at 80% -10%, rgba(55,179,74,.35), transparent 60%),
+     radial-gradient(1000px 700px at -5% 110%, rgba(255,210,31,.18), transparent 55%),
+     linear-gradient(140deg,#0a2454 0%, #123c8c 55%, #0d2f6e 100%);}
+  .bg-grid{position:absolute;inset:0;opacity:.09;
+     background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+     background-size:54px 54px;}
+  .glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5}
+
+  /* ===== browser frame ===== */
+  .browser{background:#0e1726;border-radius:16px;overflow:hidden;
+     box-shadow:0 60px 120px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+  .browser .bar{height:44px;background:#1b2536;display:flex;align-items:center;gap:8px;padding:0 18px}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .url{margin-left:16px;flex:1;height:26px;background:#0e1726;border-radius:8px;display:flex;align-items:center;
+     padding:0 14px;color:#8fa3bf;font-size:13px;font-family:var(--ff-body)}
+  .url .lock{color:#37b34a;margin-right:8px}
+  .browser .view{overflow:hidden}
+  .browser .view img{display:block;width:100%}
+
+  /* ===== phone frame ===== */
+  .phone{width:340px;background:#0b1220;border-radius:44px;padding:12px;
+     box-shadow:0 50px 100px rgba(0,0,0,.6),0 0 0 2px rgba(255,255,255,.06);position:relative}
+  .phone .screen{border-radius:34px;overflow:hidden;background:#000;position:relative}
+  .phone .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+     width:120px;height:26px;background:#0b1220;border-radius:16px;z-index:5}
+  .phone .screen img{display:block;width:100%}
+
+  .badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--ff-head);font-weight:700;
+     color:#0a2454;background:var(--yellow);padding:8px 16px;border-radius:40px;font-size:14px;letter-spacing:.02em}
+  .kicker{font-family:var(--ff-head);font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+     color:var(--green-light);font-size:14px}
+  .title{font-family:var(--ff-head);font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1.05}
+  .grad-txt{background:linear-gradient(90deg,var(--green-light),var(--yellow));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{color:rgba(255,255,255,.82);font-size:18px;line-height:1.6;max-width:520px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-family:var(--ff-head);font-weight:600;font-size:13px;color:#dfe8f5;
+     background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:8px 14px;border-radius:40px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-mark{width:46px;height:46px;border-radius:13px;background:var(--green);display:grid;place-items:center}
+  .logo-mark svg{width:26px;height:26px;fill:#fff}
+  .logo-text{font-family:var(--ff-head);font-weight:800;color:#fff;font-size:28px}
+  .logo-text span{color:var(--green-light)}
+
+  /* ================= MOCKUP 1: COVER ================= */
+  #cover{width:1600px;height:1000px;padding:0}
+  #cover .inner{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:0.92fr 1.08fr;align-items:center;padding:0 70px;gap:30px}
+  #cover .left{display:flex;flex-direction:column;gap:24px}
+  #cover .title{font-size:56px}
+  #cover .devices{position:relative;height:820px}
+  #cover .browser{position:absolute;top:120px;left:0;width:720px}
+  #cover .browser .view{height:420px}
+  #cover .phone{position:absolute;bottom:30px;right:20px;width:320px}
+  #cover .phone .screen{height:600px}
+  #cover .phone .screen img{margin-top:0}
+
+  /* ================= MOCKUP 2: FULLPAGE BROWSER ================= */
+  #full{width:1400px;padding:60px 70px}
+  #full .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;position:relative;z-index:2}
+  #full .browser{position:relative;z-index:2;max-width:1200px;margin:0 auto}
+  #full .browser .view img{width:100%;display:block}
+
+  /* ================= MOCKUP 3: RESPONSIVE DUO ================= */
+  #duo{width:1600px;height:1040px}
+  #duo .inner{position:relative;z-index:2;height:100%;padding:64px 80px;display:flex;flex-direction:column}
+  #duo .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:44px}
+  #duo .row{display:flex;align-items:center;gap:0;flex:1;position:relative}
+  #duo .browser{width:1080px}
+  #duo .browser .view{height:660px}
+  #duo .phone{position:absolute;right:40px;bottom:-10px;z-index:4}
+  #duo .phone .screen{height:680px}
+</style>
+</head>
+<body>
+
+<!-- ============ MOCKUP 1 : COVER ============ -->
+<section id="cover" class="stage">
+  <div class="bg-grad"></div><div class="bg-grid"></div>
+  <div class="glow" style="width:520px;height:520px;background:#37b34a;top:-160px;right:120px"></div>
+  <div class="inner">
+    <div class="left">
+      <div class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C7 6 5 10 5 14a7 7 0 0 0 14 0c0-1.5-.4-3-1.2-4.4C16.6 12 14 13 12 13c0-3 0-8 0-11Z"/></svg></span>
+        <span class="logo-text">Green<span>io</span></span>
+      </div>
+      <span class="kicker">Renewable Energy · WordPress Theme</span>
+      <h1 class="title">The better source of<br>energy for a <span class="grad-txt">better tomorrow</span></h1>
+      <p class="sub">A premium, fully-custom WordPress theme for clean-energy companies — overlapping-card hero, live CO₂ impact counter, and editor-driven content via Carbon Fields.</p>
+      <div class="chips">
+        <span class="chip">Custom WP Theme</span>
+        <span class="chip">Carbon Fields</span>
+        <span class="chip">Vanilla JS</span>
+        <span class="chip">Responsive</span>
+        <span class="chip">A11y</span>
+      </div>
+    </div>
+    <div class="devices">
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url"><span class="lock">🔒</span>greenio.energy</span></div>
+        <div class="view"><img src="desktop-hero-fold.png"></div>
+      </div>
+      <div class="phone"><span class="notch"></span><div class="screen"><img src="mobile-fold.png"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOCKUP 2 : FULL PAGE ============ -->
+<section id="full" class="stage">
+  <div class="bg-grad"></div><div class="bg-grid"></div>
+  <div class="glow" style="width:480px;height:480px;background:#ffd21f;top:-120px;left:-80px;opacity:.35"></div>
+  <div class="head">
+    <div>
+      <span class="kicker">Homepage · Full Scroll</span>
+      <h2 class="title" style="font-size:44px;margin-top:14px">One-page landing, end&nbsp;to&nbsp;end</h2>
+    </div>
+    <span class="badge">Desktop · 1440px</span>
+  </div>
+  <div class="browser">
+    <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="url"><span class="lock">🔒</span>greenio.energy</span></div>
+    <div class="view"><img src="desktop-full.png"></div>
+  </div>
+</section>
+
+<!-- ============ MOCKUP 3 : RESPONSIVE DUO ============ -->
+<section id="duo" class="stage">
+  <div class="bg-grad"></div><div class="bg-grid"></div>
+  <div class="glow" style="width:560px;height:560px;background:#37b34a;bottom:-200px;left:-120px"></div>
+  <div class="inner">
+    <div class="head">
+      <div>
+        <span class="kicker">Adaptive Layout</span>
+        <h2 class="title" style="font-size:46px;margin-top:12px">Pixel-perfect from desktop to phone</h2>
+      </div>
+      <div class="logo">
+        <span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2C7 6 5 10 5 14a7 7 0 0 0 14 0c0-1.5-.4-3-1.2-4.4C16.6 12 14 13 12 13c0-3 0-8 0-11Z"/></svg></span>
+        <span class="logo-text">Green<span>io</span></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url"><span class="lock">🔒</span>greenio.energy/#services</span></div>
+        <div class="view"><img src="section-services.png"></div>
+      </div>
+      <div class="phone"><span class="notch"></span><div class="screen"><img src="mobile-fold.png"></div></div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
